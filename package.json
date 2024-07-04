@@ -1,14 +1,14 @@
 {
   "name": "vscode-atmo",
   "displayName": "Atmo",
-  "description": "",
+  "publisher": "metaleap",
+  "description": "Work in progress",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.90.2"
   },
-  "publisher": "metaleap",
   "categories": [
-    "Language Packs", "Languages", "Programming Languages", "Notebooks", "Linters", "Formatters"
+    "Programming Languages", "Notebooks", "Linters", "Formatters"
   ],
   "keywords": [
     "Atmo",
