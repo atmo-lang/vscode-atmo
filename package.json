@@ -1,0 +1,110 @@
+{
+  "name": "vscode-atmo",
+  "displayName": "Atmo",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.90.2"
+  },
+  "publisher": "metaleap",
+  "categories": [
+    "Language Packs", "Languages", "Programming Languages", "Notebooks", "Linters", "Formatters"
+  ],
+  "keywords": [
+    "Atmo",
+    "Language",
+    "REPL",
+    "multi-root ready"
+  ],
+  "markdown": "github",
+  "bugs": {
+    "url": "https://github.com/metaleap/vscode-atmo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/metaleap/vscode-atmo.git"
+  },
+  "homepage": "https://github.com/metaleap/vscode-atmo",
+  "pricing": "Free",
+
+  "activationEvents": [
+    "workspaceContains:**/*.at"
+  ],
+  "main": "./out/main.js",
+  "contributes": {
+    "commands": [
+      { "command": "atmo.cmd.eval.quick", "title": "Atmo: Quick-Eval" },
+      { "command": "atmo.cmd.eval.repl", "title": "Atmo: new REPL from expression..." }
+    ],
+    "languages": [
+      {
+        "id": "atmo",
+        "aliases": [
+          "atmo",
+          "Atmo"
+        ],
+        "extensions": [
+          ".at"
+        ],
+        "configuration": "./lang/atmo.language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "atmo",
+        "scopeName": "source.atmo",
+        "path": "./lang/atmo.tmGrammar.json"
+      }
+    ],
+    "notebooks": [
+      {
+        "type": "atmo-repl",
+        "displayName": "Atmo REPL",
+        "selector": [
+          {
+            "filenamePattern": "*.atrepl"
+          }
+        ]
+      }
+    ],
+    "configuration": [
+      {
+        "title": "Atmo",
+        "properties": {
+          "atmo.lsp.disabled": { "type": "boolean", "default": false, "description":
+            "Requires extension restart. If `true`, disables most extension functionality, other than basic language grammar (syntax highlighting, brackets auto-closing etc)." },
+          "atmo.lsp.cmd": { "type": "array", "default": [ "atmo", "lsp" ], "description":
+            "Requires extension restart. Command name and args of the Atmo language server to run." },
+          "atmo.buildOnSave": { "type": "boolean", "default": false, "description":
+            "Whether to `atmo build` whenever saving any `.at` files." }
+        }
+      }
+    ],
+    "configurationDefaults": {
+      "[atmo]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2,
+        "editor.indentSize": 2
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.90.2",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^20.9.0",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.5.3"
+  }
+}

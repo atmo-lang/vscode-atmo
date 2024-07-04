@@ -1,0 +1,164 @@
+{
+	"scopeName": "source.atmo",
+	"name": "atmo",
+	"comment": "atmo language",
+	"fileTypes": [
+		"at"
+	],
+	"patterns": [
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#opishs"
+		},
+		{
+			"include": "#brackets"
+		},
+		{
+			"include": "#delimiters"
+		},
+		{
+			"include": "#numlits"
+		}
+	],
+	"repository": {
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.atmo",
+					"begin": "//",
+					"end": "$"
+				}
+			]
+		},
+		"brackets": {
+			"patterns": [
+				{
+					"name": "punctuation.definition.bracket.round.atmo",
+					"match": "\\(|\\)"
+				},
+				{
+					"name": "punctuation.definition.bracket.curly.atmo",
+					"match": "\\{|\\}"
+				},
+				{
+					"name": "punctuation.definition.bracket.square.atmo",
+					"match": "\\[|\\]"
+				}
+			]
+		},
+		"delimiters": {
+			"patterns": [
+				{
+					"name": "punctuation.atmo",
+					"match": "(\\b|\\s)(\\.|,|;|:)+(\\b|\\s)"
+				}
+			]
+		},
+		"opishs": {
+			"patterns": [
+				{
+					"name": "keyword.operator.atmo",
+					"match": "(\\b|\\s)(/|(:=|~|=|&|!|%|-|\\+|\\^|\\$|\\*|\\||\\?|\\<|\\>|\\\\)+)(\\b|\\s)"
+				}
+			]
+		},
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.atmo",
+					"match": "(\\b|\\s)….+(\\b|\\s)"
+				}
+			]
+		},
+		"numlits": {
+			"patterns": [
+				{
+					"name": "invalid.illegal.numeric.atmo",
+					"match": "\\b0[0-7]*[89]\\d*\\b"
+				},
+				{
+					"name": "constant.numeric.floating-point.atmo",
+					"match": "(\\.\\d+([Ee][\\-\\+]\\d+)?i?)\\b|\\b\\d+\\.\\d*(([Ee][\\-\\+]\\d+)?i?\\b)?"
+				},
+				{
+					"name": "constant.numeric.integer.atmo",
+					"match": "\\b((0x[0-9a-fA-F]+)|(0[0-7]+i?)|(\\d+([Ee]\\d+)?i?)|(\\d+[Ee][\\-\\+]\\d+i?))\\b"
+				}
+			]
+		},
+		"strings": {
+			"patterns": [
+				{
+					"name": "string.quoted.double.atmo",
+					"begin": "\"",
+					"end": "\"",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.atmo"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.atmo"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#string_escaped_char"
+						}
+					]
+				},
+				{
+					"name": "string.quoted.single.atmo string.quoted.other.atmo",
+					"begin": "'",
+					"end": "'",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.atmo"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.atmo"
+						}
+					}
+				},
+				{
+					"name": "string.quoted.raw.atmo string.quoted.other.atmo",
+					"begin": "`",
+					"end": "`",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.atmo"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.atmo"
+						}
+					}
+				}
+			]
+		},
+		"string_escaped_char": {
+			"patterns": [
+				{
+					"name": "constant.character.escape.atmo",
+					"match": "\\\\([0-7]{3}|[abfnrtv\\\\'\"]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})"
+				},
+				{
+					"name": "invalid.illegal.unknown-escape.atmo",
+					"match": "\\\\[^0-7xuUabfnrtv\\'\"]"
+				}
+			]
+		}
+	}
+}
