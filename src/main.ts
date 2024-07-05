@@ -7,7 +7,6 @@ import * as node_exec from 'child_process'
 
 
 let lspClient: lsp.Client | null = null
-let statusBarItemBuildOnSave: vsc.StatusBarItem
 let regDisp: (...items: { dispose(): any }[]) => number
 let lastEvalExpr: string = ""
 
@@ -22,13 +21,6 @@ export function activate(ctx: vsc.ExtensionContext) {
 	// register "repl", aka vscode custom notebook type
 	regDisp(new repl.Kernel())
 	regDisp(vsc.workspace.registerNotebookSerializer('atmo-repl', new repl.NotebookSerializer()))
-
-	// set up build-on-save
-	regDisp(statusBarItemBuildOnSave =
-		vsc.window.createStatusBarItem('atmo-build-on-save', vsc.StatusBarAlignment.Left))
-	statusBarItemBuildOnSave.text = "$(coffee)"
-	statusBarItemBuildOnSave.tooltip = "Atmo build-on-save running..."
-	regDisp(vsc.workspace.onDidSaveTextDocument(tryBuildOnSave))
 
 	// set up Eval code actions
 	if (lspClient) {
@@ -123,36 +115,4 @@ async function cmdReplFromExpr(...args: any[]) {
 			value: src_file.getText(range),
 		}],
 	}))
-}
-
-
-async function tryBuildOnSave(justSaved: vsc.TextDocument) {
-	const cfg = vsc.workspace.getConfiguration()
-	const build_on_save = cfg.get<boolean>('atmo.buildOnSave', false)
-	if (!build_on_save)
-		return
-
-	let dir_path = node_path.dirname(justSaved.fileName)
-	let pkg_file_path = node_path.join(dir_path, 'atmo.pkg')
-	while ((dir_path !== '/') && !node_fs.existsSync(pkg_file_path)) {
-		dir_path = node_path.dirname(dir_path)
-		pkg_file_path = node_path.join(dir_path, 'atmo.pkg')
-	}
-	if (!node_fs.existsSync(pkg_file_path))
-		return
-
-	console.log(new Date() + "\tbuild-on-save...")
-	statusBarItemBuildOnSave.show()
-	setTimeout(() => { // needed for the status-item to actually show, annoyingly
-		try {
-			node_exec.execFileSync('atmo', ['build'], { cwd: dir_path, })
-		} catch (err) {
-			const term = vsc.window.createTerminal({ cwd: dir_path, name: 'atmo build' })
-			regDisp(term)
-			term.show(true)
-			term.sendText('atmo build', true)
-		} finally {
-			statusBarItemBuildOnSave.hide()
-		}
-	}, 321) // timeout of well over 100ms needed, or all this would delay (by the whole build duration!) LSP didChangeWatchedFiles notification. but with proper timeout, the latter "gets through in time". nodeJS event-loop subtleties...
 }

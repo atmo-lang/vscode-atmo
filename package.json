@@ -74,9 +74,7 @@
           "atmo.lsp.disabled": { "type": "boolean", "default": false, "description":
             "Requires extension restart. If `true`, disables most extension functionality, other than basic language grammar (syntax highlighting, brackets auto-closing etc)." },
           "atmo.lsp.cmd": { "type": "array", "default": [ "atmo", "lsp" ], "description":
-            "Requires extension restart. Command name and args of the Atmo language server to run." },
-          "atmo.buildOnSave": { "type": "boolean", "default": false, "description":
-            "Whether to `atmo build` whenever saving any `.at` files." }
+            "Requires extension restart. Command name and args of the Atmo language server to run." }
         }
       }
     ],
