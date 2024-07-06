@@ -1,6 +1,6 @@
 {
     "comments": {
-        "lineComment": "//"
+        "lineComment": "//",
     },
     "brackets": [
         [
@@ -79,5 +79,8 @@
     ],
     "folding": {
         "offSide": true
-    }
+    },
+    "onEnterRules": [
+        { "beforeText": "^\\s*\\/\\/\\/.*$", "action": { "indent": "none", "appendText": "/// " } },
+    ]
 }
