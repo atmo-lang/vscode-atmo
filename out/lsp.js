@@ -42,7 +42,7 @@ function init(ctx) {
     });
     client.onDidChangeState((evt) => {
         if (evt.newState == lsp.State.Running)
-            client.sendRequest('workspace/executeCommand', { command: 'announce-atmo-vscode-ext', arguments: [] });
+            client.sendRequest('workspace/executeCommand', { command: 'announceAtmoVscExt', arguments: [] });
     });
     client.start();
     return client;

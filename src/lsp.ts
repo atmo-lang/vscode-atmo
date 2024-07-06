@@ -31,7 +31,7 @@ export function init(ctx: vsc.ExtensionContext): (lsp.LanguageClient | null) {
     client.onDidChangeState((evt) => {
         if (evt.newState == lsp.State.Running)
             client.sendRequest('workspace/executeCommand',
-                { command: 'announce-atmo-vscode-ext', arguments: [] } as lsp.ExecuteCommandParams)
+                { command: 'announceAtmoVscExt', arguments: [] } as lsp.ExecuteCommandParams)
     })
     client.start()
     return client
