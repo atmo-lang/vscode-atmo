@@ -1,7 +1,7 @@
 import * as vsc from 'vscode'
 import * as lsp from './lsp'
 import * as repl from './repl'
-import * as views from './views'
+import * as tree_toks from './tree_toks'
 
 
 export let lspClient: lsp.Client | null = null
@@ -29,7 +29,7 @@ export function activate(ctx: vsc.ExtensionContext) {
 		})
 	}
 
-	regDisp(...views.init(ctx))
+	regDisp(...tree_toks.init(ctx))
 }
 
 export function deactivate() {

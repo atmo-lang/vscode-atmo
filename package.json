@@ -93,8 +93,8 @@
     },
     "views": {
       "atmoVc": [
-        { "id": "atmoVcTocs", "name": "Tocs", "icon": "$(list-flat)" },
-        { "id": "atmoVcAst", "name": "AST", "icon": "$(list-tree)" }
+        { "id": "atmoVcTocs", "name": "Parsing: Toks", "icon": "$(list-flat)" },
+        { "id": "atmoVcAst", "name": "Parsing: AST", "icon": "$(list-tree)" }
       ]
     }
   },

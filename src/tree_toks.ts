@@ -9,10 +9,15 @@ export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
         vsc.window.registerTreeDataProvider('atmoVcTocs', treeToks = new TocTree()),
         vsc.window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor),
+        vsc.workspace.onDidChangeTextDocument(onDidChangeTextDocument)
     ]
 }
 
-function onDidChangeActiveTextEditor(ed: vsc.TextEditor | undefined) {
+function onDidChangeActiveTextEditor(_: vsc.TextEditor | undefined) {
+    treeToks.eventEmitter.fire(undefined)
+}
+
+function onDidChangeTextDocument(evt: vsc.TextDocumentChangeEvent) {
     treeToks.eventEmitter.fire(undefined)
 }
 
@@ -42,16 +47,18 @@ class TocTree implements vsc.TreeDataProvider<Tok> {
     onDidChangeTreeData: vsc.Event<undefined> = this.eventEmitter.event
 
     getTreeItem(item: Tok): vsc.TreeItem | Thenable<vsc.TreeItem> {
-        return new vsc.TreeItem(item.Src)
+        const ret = new vsc.TreeItem(`L${item.Pos.Line}C${item.Pos.Char} ${TokKind[item.Kind].substring("TokKind".length)}`)
+        ret.description = item.Src
+        return ret
     }
 
     async getChildren(item?: Tok | undefined): Promise<Tok[]> {
         const ed = vsc.window.activeTextEditor
         if (item || (!main.lspClient) || (!ed) || (!ed.document) || (ed.document.languageId !== 'atmo'))
             return []
-        const toks = await main.lspClient.sendRequest('workspace/executeCommand',
+        const ret = await main.lspClient.sendRequest('workspace/executeCommand',
             { command: 'getSrcFileToks', arguments: [ed.document.uri.fsPath] } as lsp.ExecuteCommandParams)
-        return (toks ? (toks as Tok[]) : [])
+        return ((ret && Array.isArray(ret) && ret.length) ? (ret[0] as Tok[]) : [])
     }
 
     getParent?(_: Tok): vsc.ProviderResult<Tok> {
