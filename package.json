@@ -27,10 +27,13 @@
   "homepage": "https://github.com/metaleap/vscode-atmo",
   "pricing": "Free",
 
+
   "activationEvents": [
     "workspaceContains:**/*.at"
   ],
   "main": "./out/main.js",
+
+
   "contributes": {
     "commands": [
       { "command": "atmo.cmd.eval.quick", "title": "Atmo: Quick-Eval" },
@@ -84,8 +87,19 @@
         "editor.tabSize": 2,
         "editor.indentSize": 2
       }
+    },
+    "viewsContainers": {
+      "activitybar": [ { "id": "atmoVc", "title": "Atmo", "icon": "$(coffee)" } ]
+    },
+    "views": {
+      "atmoVc": [
+        { "id": "atmoVcTocs", "name": "Tocs", "icon": "$(list-flat)" },
+        { "id": "atmoVcAst", "name": "AST", "icon": "$(list-tree)" }
+      ]
     }
   },
+
+
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",

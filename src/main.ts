@@ -1,12 +1,10 @@
 import * as vsc from 'vscode'
 import * as lsp from './lsp'
 import * as repl from './repl'
-import * as node_path from 'node:path'
-import * as node_fs from 'node:fs'
-import * as node_exec from 'child_process'
+import * as views from './views'
 
 
-let lspClient: lsp.Client | null = null
+export let lspClient: lsp.Client | null = null
 let regDisp: (...items: { dispose(): any }[]) => number
 let lastEvalExpr: string = ""
 
@@ -30,6 +28,8 @@ export function activate(ctx: vsc.ExtensionContext) {
 			provideCodeActions: codeActions,
 		})
 	}
+
+	regDisp(...views.init(ctx))
 }
 
 export function deactivate() {
