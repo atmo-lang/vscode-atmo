@@ -29,7 +29,6 @@ type Tok = {
         Line: number
         Char: number
     }
-    ByteOffset: number
     Src: string
     parent: Toks
 }
