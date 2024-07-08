@@ -1,6 +1,7 @@
 import * as vsc from 'vscode'
 import * as lsp from 'vscode-languageclient/node'
 import * as main from './main'
+import * as util from './tree_util'
 
 export let treeToks: TocTree
 
@@ -30,6 +31,7 @@ type Tok = {
     }
     ByteOffset: number
     Src: string
+    parent: Toks
 }
 enum TokKind {
     TokKindBrace = 1,
@@ -42,30 +44,53 @@ enum TokKind {
     TokKindLitInt = 8,
     TokKindLitFloat = 9,
 }
-class TocTree implements vsc.TreeDataProvider<Tok> {
+type Toks = Tok[]
+type TopLevelToksChunks = Toks[]
+
+class TocTree implements vsc.TreeDataProvider<Tok | Toks> {
     eventEmitter: vsc.EventEmitter<undefined> = new vsc.EventEmitter<undefined>()
     onDidChangeTreeData: vsc.Event<undefined> = this.eventEmitter.event
 
-    getTreeItem(item: Tok): vsc.TreeItem | Thenable<vsc.TreeItem> {
-        const ret = new vsc.TreeItem(`L${item.Pos.Line}C${item.Pos.Char} ${TokKind[item.Kind].substring("TokKind".length)}`)
-        ret.description = item.Src
-        return ret
+    getTreeItem(item: Tok | Toks): vsc.TreeItem | Thenable<vsc.TreeItem> {
+        if (Array.isArray(item)) {  // item: Toks
+            const ret = new util.TreeItem(`L${item[0].Pos.Line}-${item[item.length - 1].Pos.Line}`, true, item)
+            ret.description = item.map((_) => _.Src).join(" ")
+            ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
+            return ret
+        } else {                    // item: Tok
+            const ret = new util.TreeItem(`L${item.Pos.Line}C${item.Pos.Char} ${TokKind[item.Kind].substring("TokKind".length)}`, false, item)
+            ret.description = item.Src
+            ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
+            return ret
+        }
     }
 
-    async getChildren(item?: Tok | undefined): Promise<Tok[]> {
+    async getChildren(item?: Tok | Toks | undefined): Promise<Toks | TopLevelToksChunks> {
         const ed = vsc.window.activeTextEditor
+
+        if (item && Array.isArray(item))
+            return item
+
         if (item || (!main.lspClient) || (!ed) || (!ed.document) || (ed.document.languageId !== 'atmo'))
             return []
+
         const ret = await main.lspClient.sendRequest('workspace/executeCommand',
             { command: 'getSrcFileToks', arguments: [ed.document.uri.fsPath] } as lsp.ExecuteCommandParams)
-        return ((ret && Array.isArray(ret) && ret.length) ? (ret[0] as Tok[]) : [])
+
+        if (ret && Array.isArray(ret) && ret.length) {
+            ret.forEach((toks: Toks) => {
+                toks.forEach((tok) => { tok.parent = toks })
+            })
+            return ret as TopLevelToksChunks
+        }
+        return []
     }
 
-    getParent?(_: Tok): vsc.ProviderResult<Tok> {
-        return undefined
+    getParent?(item: Tok | Toks): vsc.ProviderResult<Tok | Toks> {
+        return ((!Array.isArray(item)) ? item.parent : undefined)
     }
 
-    resolveTreeItem?(item: vsc.TreeItem, _: Tok, _cancel: vsc.CancellationToken): vsc.ProviderResult<vsc.TreeItem> {
+    resolveTreeItem?(item: vsc.TreeItem, _: Tok | Toks, _cancel: vsc.CancellationToken): vsc.ProviderResult<vsc.TreeItem> {
         return item
     }
 
