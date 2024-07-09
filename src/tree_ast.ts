@@ -54,7 +54,8 @@ class TreeAst extends tree.Tree<Node> {
 
     override getTreeItem(item: Node): vsc.TreeItem | Thenable<vsc.TreeItem> {
         const range = rangeNode(item)
-        const ret = new tree.Item(`L${range.start.line + 1}C${range.start.character + 1}-L${range.end.line + 1}C${range.end.character + 1} · ${NodeKind[item.Kind].substring("NodeKind".length)}`, true, item)
+        const ret = new tree.Item(`L${range.start.line + 1}C${range.start.character + 1}-L${range.end.line + 1}C${range.end.character + 1} · ${NodeKind[item.Kind].substring("NodeKind".length)}`,
+            (item.Children && item.Children.length) ? true : false, item)
         ret.iconPath = new vsc.ThemeIcon(`symbol-${tokKindIcons.get(item.Kind)}`)
         ret.description = item.Src
         ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
