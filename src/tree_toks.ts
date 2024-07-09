@@ -109,12 +109,12 @@ class TreeToks extends tree.Tree<Tok | Toks> {
 }
 
 function rangeTok(tok: Tok): vsc.Range {
-    let end_line = tok.Pos.Line - 1, end_char = tok.Pos.Char - 1
+    let end_line = tok.Pos.Line - 1, end_char = tok.Pos.Char
     for (let i = 1; i < tok.Src.length; i++)
         if (tok.Src[i] != '\n')
             end_char++
         else
-            [end_line, end_char] = [end_line + 1, 0]
+            [end_line, end_char] = [end_line + 1, 1]
 
     return new vsc.Range(new vsc.Position(tok.Pos.Line - 1, tok.Pos.Char - 1), new vsc.Position(end_line, end_char))
 }
