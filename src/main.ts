@@ -1,6 +1,7 @@
 import * as vsc from 'vscode'
 import * as lsp from './lsp'
 import * as repl from './repl'
+import * as tree_ast from './tree_ast'
 import * as tree_toks from './tree_toks'
 
 
@@ -30,6 +31,7 @@ export function activate(ctx: vsc.ExtensionContext) {
 	}
 
 	regDisp(...tree_toks.init(ctx))
+	regDisp(...tree_ast.init(ctx))
 }
 
 export function deactivate() {
