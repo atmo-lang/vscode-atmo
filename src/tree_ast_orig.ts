@@ -3,19 +3,19 @@ import * as lsp from 'vscode-languageclient/node'
 import * as main from './main'
 import * as util from './tree_util'
 
-export let treeToks: TreeToks
+export let treeAstOrig: TreeAstOrig
 
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
-        vsc.window.registerTreeDataProvider('atmoVcToks', treeToks = new TreeToks()),
+        vsc.window.registerTreeDataProvider('atmoVcAstOrig', treeAstOrig = new TreeAstOrig()),
         vsc.window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor),
         vsc.workspace.onDidChangeTextDocument(onDidChangeTextDocument)
     ]
 }
 
-function onDidChangeActiveTextEditor(_: vsc.TextEditor | undefined) { treeToks.eventEmitter.fire(undefined) }
-function onDidChangeTextDocument(evt: vsc.TextDocumentChangeEvent) { treeToks.eventEmitter.fire(undefined) }
+function onDidChangeActiveTextEditor(_: vsc.TextEditor | undefined) { treeAstOrig.eventEmitter.fire(undefined) }
+function onDidChangeTextDocument(evt: vsc.TextDocumentChangeEvent) { treeAstOrig.eventEmitter.fire(undefined) }
 
 
 type Tok = {
@@ -42,7 +42,7 @@ enum TokKind {
 type Toks = Tok[]
 type TopLevelToksChunks = Toks[]
 
-class TreeToks implements vsc.TreeDataProvider<Tok | Toks> {
+class TreeAstOrig implements vsc.TreeDataProvider<Tok | Toks> {
     eventEmitter: vsc.EventEmitter<undefined> = new vsc.EventEmitter<undefined>()
     onDidChangeTreeData: vsc.Event<undefined> = this.eventEmitter.event
 
