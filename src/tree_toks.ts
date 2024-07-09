@@ -1,7 +1,7 @@
 import * as vsc from 'vscode'
 import * as lsp from 'vscode-languageclient/node'
 import * as main from './main'
-import * as util from './tree_util'
+import * as tree from './tree'
 
 export let treeToks: TreeToks
 
@@ -14,8 +14,8 @@ export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     ]
 }
 
-function onDidChangeActiveTextEditor(_: vsc.TextEditor | undefined) { treeToks.eventEmitter.fire(undefined) }
-function onDidChangeTextDocument(evt: vsc.TextDocumentChangeEvent) { treeToks.eventEmitter.fire(undefined) }
+function onDidChangeActiveTextEditor(_: vsc.TextEditor | undefined) { treeToks.refresh() }
+function onDidChangeTextDocument(evt: vsc.TextDocumentChangeEvent) { treeToks.refresh() }
 
 
 type Tok = {
@@ -30,11 +30,11 @@ type Tok = {
 enum TokKind {
     TokKindErr = 0,
     TokKindBrace = 1,
-    TokKindOp = 2,
-    TokKindSep = 3,
+    TokKindSep = 2,
+    TokKindOp = 3,
     TokKindIdent = 4,
     TokKindComment = 5,
-    TokKindLitChar = 6,
+    TokKindLitRune = 6,
     TokKindLitStr = 7,
     TokKindLitInt = 8,
     TokKindLitFloat = 9,
@@ -42,25 +42,37 @@ enum TokKind {
 type Toks = Tok[]
 type TopLevelToksChunks = Toks[]
 
-class TreeToks implements vsc.TreeDataProvider<Tok | Toks> {
-    eventEmitter: vsc.EventEmitter<undefined> = new vsc.EventEmitter<undefined>()
-    onDidChangeTreeData: vsc.Event<undefined> = this.eventEmitter.event
+const tokKindIcons = new Map<TokKind, string>([
+    [TokKind.TokKindErr, "event"],
+    [TokKind.TokKindBrace, "namespace"],
+    [TokKind.TokKindOp, "operator"],
+    [TokKind.TokKindSep, "blank"],
+    [TokKind.TokKindIdent, "key"],
+    [TokKind.TokKindComment, "comment"],
+    [TokKind.TokKindLitRune, "string"],
+    [TokKind.TokKindLitStr, "string"],
+    [TokKind.TokKindLitInt, "numeric"],
+    [TokKind.TokKindLitFloat, "numeric"],
+])
 
-    getTreeItem(item: Tok | Toks): vsc.TreeItem | Thenable<vsc.TreeItem> {
+class TreeToks extends tree.Tree<Tok | Toks> {
+    override getTreeItem(item: Tok | Toks): vsc.TreeItem | Thenable<vsc.TreeItem> {
         if (Array.isArray(item)) {  // item: Toks
-            const ret = new util.TreeItem(`L${item[0].Pos.Line}-${item[item.length - 1].Pos.Line}`, true, item)
+            const ret = new tree.TreeItem(`L${item[0].Pos.Line}-${item[item.length - 1].Pos.Line}`, true, item)
             ret.description = item.map((_) => _.Src).join(" ")
             ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
             return ret
         } else {                    // item: Tok
-            const ret = new util.TreeItem(`L${item.Pos.Line}C${item.Pos.Char} ${TokKind[item.Kind].substring("TokKind".length)}`, false, item)
+            const icon = `symbol-${tokKindIcons.get(item.Kind)}`
+            const ret = new tree.TreeItem(`L${item.Pos.Line}C${item.Pos.Char} ${TokKind[item.Kind].substring("TokKind".length)}`, false, item)
+            ret.iconPath = new vsc.ThemeIcon(icon)
             ret.description = item.Src
             ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
             return ret
         }
     }
 
-    async getChildren(item?: Tok | Toks | undefined): Promise<Toks | TopLevelToksChunks> {
+    override async getChildren(item?: Tok | Toks | undefined): Promise<Toks | TopLevelToksChunks> {
         const ed = vsc.window.activeTextEditor
 
         if (item && Array.isArray(item))
@@ -81,12 +93,8 @@ class TreeToks implements vsc.TreeDataProvider<Tok | Toks> {
         return []
     }
 
-    getParent?(item: Tok | Toks): vsc.ProviderResult<Tok | Toks> {
+    override getParent?(item: Tok | Toks): vsc.ProviderResult<Tok | Toks> {
         return ((!Array.isArray(item)) ? item.parent : undefined)
-    }
-
-    resolveTreeItem?(item: vsc.TreeItem, _: Tok | Toks, _cancel: vsc.CancellationToken): vsc.ProviderResult<vsc.TreeItem> {
-        return item
     }
 
 }
