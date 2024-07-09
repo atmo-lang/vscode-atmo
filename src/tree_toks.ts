@@ -33,7 +33,7 @@ type Tok = {
     parent: Toks
 }
 enum TokKind {
-    TokKindInvalid = 0,
+    TokKindErr = 0,
     TokKindBrace = 1,
     TokKindOp = 2,
     TokKindSep = 3,
