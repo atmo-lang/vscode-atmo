@@ -2,6 +2,7 @@ import * as vsc from 'vscode'
 import * as lsp from 'vscode-languageclient/node'
 import * as main from './main'
 import * as tree from './tree'
+import * as tree_toks from './tree_toks'
 
 export let treeAstOrig: TreeAst
 
@@ -13,94 +14,83 @@ export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     ]
 }
 
-type Tok = {
-    Kind: TokKind
-    Pos: {
-        Line: number
-        Char: number
-    }
+type Node = {
+    parent: Node
+    Kind: NodeKind
+    Children: Nodes
+    Toks: tree_toks.Toks
     Src: string
-    parent: Toks
+    LitAtom: number | string | null
 }
-enum TokKind {
-    TokKindErr = 0,
-    TokKindBrace = 1,
-    TokKindSep = 2,
-    TokKindOp = 3,
-    TokKindIdent = 4,
-    TokKindComment = 5,
-    TokKindLitRune = 6,
-    TokKindLitStr = 7,
-    TokKindLitInt = 8,
-    TokKindLitFloat = 9,
+enum NodeKind {
+    NodeKindErr = 0,
+    NodeKindCallForm = 1,
+    NodeKindCurlyBraces = 2,
+    NodeKindSquareBrackets = 3,
+    NodeKindLitInt = 4,
+    NodeKindLitFloat = 5,
+    NodeKindLitRune = 6,
+    NodeKindLitStr = 7,
+    NodeKindIdent = 8,
 }
-type Toks = Tok[]
-type TopLevelToksChunks = Toks[]
+type Nodes = Node[]
 
-const tokKindIcons = new Map<TokKind, string>([
-    [TokKind.TokKindErr, "event"],
-    [TokKind.TokKindBrace, "namespace"],
-    [TokKind.TokKindOp, "operator"],
-    [TokKind.TokKindSep, "blank"],
-    [TokKind.TokKindIdent, "key"],
-    [TokKind.TokKindComment, "comment"],
-    [TokKind.TokKindLitRune, "string"],
-    [TokKind.TokKindLitStr, "string"],
-    [TokKind.TokKindLitInt, "numeric"],
-    [TokKind.TokKindLitFloat, "numeric"],
+const tokKindIcons = new Map<NodeKind, string>([
+    [NodeKind.NodeKindErr, "event"],
+    [NodeKind.NodeKindCallForm, "method"],
+    [NodeKind.NodeKindCurlyBraces, "namespace"],
+    [NodeKind.NodeKindSquareBrackets, "array"],
+    [NodeKind.NodeKindLitInt, "numeric"],
+    [NodeKind.NodeKindLitFloat, "numeric"],
+    [NodeKind.NodeKindLitRune, "string"],
+    [NodeKind.NodeKindLitStr, "string"],
+    [NodeKind.NodeKindIdent, "variable"],
 ])
 
-class TreeAst extends tree.Tree<Tok | Toks> {
-    cmdOnClick(it: tree.Item<Tok | Toks>): vsc.Command {
+class TreeAst extends tree.Tree<Node> {
+    cmdOnClick(it: tree.Item<Node>): vsc.Command {
         return { command: this.cmdName, arguments: [it], title: "Reveal in text editor" }
     }
 
-    override getTreeItem(item: Tok | Toks): vsc.TreeItem | Thenable<vsc.TreeItem> {
-        if (Array.isArray(item)) {  // item: Toks
-            const ret = new tree.Item(`L${item[0].Pos.Line}-${item[item.length - 1].Pos.Line}`, true, item)
-            ret.description = item.map((_) => _.Src).join(" ")
-            ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
-            ret.command = this.cmdOnClick(ret)
-            return ret
-        } else {                    // item: Tok
-            const icon = `symbol-${tokKindIcons.get(item.Kind)}`
-            const ret = new tree.Item(`L${item.Pos.Line}C${item.Pos.Char} ${TokKind[item.Kind].substring("TokKind".length)}`, false, item)
-            ret.iconPath = new vsc.ThemeIcon(icon)
-            ret.description = item.Src
-            ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
-            ret.command = this.cmdOnClick(ret)
-            return ret
-        }
+    override getTreeItem(item: Node): vsc.TreeItem | Thenable<vsc.TreeItem> {
+        const range = rangeNode(item)
+        const ret = new tree.Item(`L${range.start.line + 1}C${range.start.character + 1}-L${range.end.line + 1}C${range.end.character + 1} · ${NodeKind[item.Kind].substring("NodeKind".length)}`, true, item)
+        ret.iconPath = new vsc.ThemeIcon(`symbol-${tokKindIcons.get(item.Kind)}`)
+        ret.description = item.Src
+        ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
+        ret.command = this.cmdOnClick(ret)
+        return ret
     }
 
-    override async getChildren(item?: Tok | Toks | undefined): Promise<Toks | TopLevelToksChunks> {
+    override async getChildren(item?: Node | undefined): Promise<Nodes> {
         const ed = vsc.window.activeTextEditor
 
-        if (item && Array.isArray(item))
-            return item
-
-        if (item || (!main.lspClient) || (!ed) || (!ed.document) || (ed.document.languageId !== 'atmo'))
+        if ((!main.lspClient) || (!ed) || (!ed.document) || (ed.document.languageId !== 'atmo'))
             return []
 
-        const ret = await main.lspClient.sendRequest('workspace/executeCommand',
-            { command: 'getSrcFileToks', arguments: [ed.document.uri.fsPath] } as lsp.ExecuteCommandParams)
+        if (item)
+            return item.Children
 
+        const ret: Nodes | undefined = await main.lspClient.sendRequest('workspace/executeCommand',
+            { command: 'getSrcFileAstOrig', arguments: [ed.document.uri.fsPath] } as lsp.ExecuteCommandParams)
         if (ret && Array.isArray(ret) && ret.length) {
-            ret.forEach((toks: Toks) => {
-                toks.forEach((tok) => { tok.parent = toks })
+            walkNodes(ret, (node) => {
+                if (node.Children)
+                    for (const sub_node of node.Children)
+                        sub_node.parent = node
             })
-            return ret as TopLevelToksChunks
+            return ret
         }
         return []
     }
 
-    override getParent?(item: Tok | Toks): vsc.ProviderResult<Tok | Toks> {
-        return ((!Array.isArray(item)) ? item.parent : undefined)
+    override getParent?(item: Node): vsc.ProviderResult<Node> {
+        return item.parent
     }
 
-    override onItemClick(it: tree.Item<Tok | Toks>): void {
-        if (vsc.window.activeTextEditor) {
-            const range = Array.isArray(it.data) ? rangeToks(it.data) : rangeTok(it.data)
+    override onItemClick(it: tree.Item<Node>): void {
+        if (it && vsc.window.activeTextEditor) {
+            const range = rangeNode(it.data)
             vsc.window.activeTextEditor.selections = [new vsc.Selection(range.start, range.end)]
             vsc.window.showTextDocument(vsc.window.activeTextEditor.document)
         }
@@ -108,17 +98,14 @@ class TreeAst extends tree.Tree<Tok | Toks> {
 
 }
 
-function rangeTok(tok: Tok): vsc.Range {
-    let end_line = tok.Pos.Line - 1, end_char = tok.Pos.Char
-    for (let i = 1; i < tok.Src.length; i++)
-        if (tok.Src[i] != '\n')
-            end_char++
-        else
-            [end_line, end_char] = [end_line + 1, 1]
-
-    return new vsc.Range(new vsc.Position(tok.Pos.Line - 1, tok.Pos.Char - 1), new vsc.Position(end_line, end_char))
+function rangeNode(node: Node): vsc.Range {
+    return tree_toks.rangeToks(node.Toks)
 }
 
-function rangeToks(toks: Toks): vsc.Range {
-    return new vsc.Range(rangeTok(toks[0]).start, rangeTok(toks[toks.length - 1]).end)
+function walkNodes(nodes: Nodes, onNode: (_: Node) => void) {
+    for (const node of nodes) {
+        onNode(node)
+        if (node.Children)
+            walkNodes(node.Children, onNode)
+    }
 }
