@@ -5,18 +5,13 @@ import * as tree from './tree'
 
 export let treeToks: TreeToks
 
-
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
-        vsc.window.registerTreeDataProvider('atmoVcToks', treeToks = new TreeToks()),
-        vsc.window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor),
-        vsc.workspace.onDidChangeTextDocument(onDidChangeTextDocument)
+        vsc.window.registerTreeDataProvider('atmoVcToks', treeToks = new TreeToks(ctx, "toks")),
+        vsc.window.onDidChangeActiveTextEditor(treeToks.refresh.bind(treeToks)),
+        vsc.workspace.onDidChangeTextDocument(treeToks.refresh.bind(treeToks)),
     ]
 }
-
-function onDidChangeActiveTextEditor(_: vsc.TextEditor | undefined) { treeToks.refresh() }
-function onDidChangeTextDocument(evt: vsc.TextDocumentChangeEvent) { treeToks.refresh() }
-
 
 type Tok = {
     Kind: TokKind
@@ -56,18 +51,24 @@ const tokKindIcons = new Map<TokKind, string>([
 ])
 
 class TreeToks extends tree.Tree<Tok | Toks> {
+    cmdOnClick(it: tree.Item<Tok | Toks>): vsc.Command {
+        return { command: this.cmdName, arguments: [it], title: "Reveal in text editor" }
+    }
+
     override getTreeItem(item: Tok | Toks): vsc.TreeItem | Thenable<vsc.TreeItem> {
         if (Array.isArray(item)) {  // item: Toks
-            const ret = new tree.TreeItem(`L${item[0].Pos.Line}-${item[item.length - 1].Pos.Line}`, true, item)
+            const ret = new tree.Item(`L${item[0].Pos.Line}-${item[item.length - 1].Pos.Line}`, true, item)
             ret.description = item.map((_) => _.Src).join(" ")
             ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
+            ret.command = this.cmdOnClick(ret)
             return ret
         } else {                    // item: Tok
             const icon = `symbol-${tokKindIcons.get(item.Kind)}`
-            const ret = new tree.TreeItem(`L${item.Pos.Line}C${item.Pos.Char} ${TokKind[item.Kind].substring("TokKind".length)}`, false, item)
+            const ret = new tree.Item(`L${item.Pos.Line}C${item.Pos.Char} ${TokKind[item.Kind].substring("TokKind".length)}`, false, item)
             ret.iconPath = new vsc.ThemeIcon(icon)
             ret.description = item.Src
             ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
+            ret.command = this.cmdOnClick(ret)
             return ret
         }
     }
@@ -97,4 +98,27 @@ class TreeToks extends tree.Tree<Tok | Toks> {
         return ((!Array.isArray(item)) ? item.parent : undefined)
     }
 
+    override onItemClick(it: tree.Item<Tok | Toks>): void {
+        if (vsc.window.activeTextEditor) {
+            const range = Array.isArray(it.data) ? rangeToks(it.data) : rangeTok(it.data)
+            vsc.window.activeTextEditor.selections = [new vsc.Selection(range.start, range.end)]
+            vsc.window.showTextDocument(vsc.window.activeTextEditor.document)
+        }
+    }
+
+}
+
+function rangeTok(tok: Tok): vsc.Range {
+    let end_line = tok.Pos.Line - 1, end_char = tok.Pos.Char - 1
+    for (let i = 1; i < tok.Src.length; i++)
+        if (tok.Src[i] != '\n')
+            end_char++
+        else
+            [end_line, end_char] = [end_line + 1, 0]
+
+    return new vsc.Range(new vsc.Position(tok.Pos.Line - 1, tok.Pos.Char - 1), new vsc.Position(end_line, end_char))
+}
+
+function rangeToks(toks: Toks): vsc.Range {
+    return new vsc.Range(rangeTok(toks[0]).start, rangeTok(toks[toks.length - 1]).end)
 }

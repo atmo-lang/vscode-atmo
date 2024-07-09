@@ -1,6 +1,6 @@
 import * as vsc from 'vscode'
 
-export class TreeItem<T> extends vsc.TreeItem {
+export class Item<T> extends vsc.TreeItem {
     data: T
 
     constructor(label: string, collapsible: boolean, data: T) {
@@ -12,6 +12,12 @@ export class TreeItem<T> extends vsc.TreeItem {
 export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
     eventEmitter: vsc.EventEmitter<undefined> = new vsc.EventEmitter<undefined>()
     onDidChangeTreeData: vsc.Event<undefined> = this.eventEmitter.event
+    cmdName: string
+
+    constructor(ctx: vsc.ExtensionContext, moniker: string) {
+        this.cmdName = "atmo.tree.onClick_" + moniker
+        ctx.subscriptions.push(vsc.commands.registerCommand(this.cmdName, this.onItemClick.bind(this)))
+    }
 
     abstract getTreeItem(element: T): vsc.TreeItem | Thenable<vsc.TreeItem>;
     abstract getChildren(element?: T | undefined): vsc.ProviderResult<T[]>;
@@ -20,7 +26,6 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
         return item
     }
 
-    refresh() {
-        this.eventEmitter.fire(undefined)
-    }
+    abstract onItemClick(_: Item<T>): void;
+    refresh() { this.eventEmitter.fire(undefined) }
 }
