@@ -23,31 +23,31 @@ export type Tok = {
     parent: Toks
 }
 enum TokKind {
-    TokKindErr = 0,
-    TokKindBrace = 1,
-    TokKindSep = 2,
-    TokKindOp = 3,
-    TokKindIdent = 4,
-    TokKindComment = 5,
-    TokKindLitRune = 6,
-    TokKindLitStr = 7,
-    TokKindLitInt = 8,
-    TokKindLitFloat = 9,
+    Err = 0,
+    Brace = 1,
+    Sep = 2,
+    Op = 3,
+    Ident = 4,
+    Comment = 5,
+    LitRune = 6,
+    LitStr = 7,
+    LitInt = 8,
+    LitFloat = 9,
 }
 export type Toks = Tok[]
 type TopLevelToksChunks = Toks[]
 
 const tokKindIcons = new Map<TokKind, string>([
-    [TokKind.TokKindErr, "event"],
-    [TokKind.TokKindBrace, "namespace"],
-    [TokKind.TokKindOp, "operator"],
-    [TokKind.TokKindSep, "blank"],
-    [TokKind.TokKindIdent, "key"],
-    [TokKind.TokKindComment, "comment"],
-    [TokKind.TokKindLitRune, "string"],
-    [TokKind.TokKindLitStr, "string"],
-    [TokKind.TokKindLitInt, "numeric"],
-    [TokKind.TokKindLitFloat, "numeric"],
+    [TokKind.Err, "event"],
+    [TokKind.Brace, "namespace"],
+    [TokKind.Op, "operator"],
+    [TokKind.Sep, "blank"],
+    [TokKind.Ident, "key"],
+    [TokKind.Comment, "comment"],
+    [TokKind.LitRune, "string"],
+    [TokKind.LitStr, "string"],
+    [TokKind.LitInt, "numeric"],
+    [TokKind.LitFloat, "numeric"],
 ])
 
 class TreeToks extends tree.Tree<Tok | Toks> {
@@ -63,7 +63,7 @@ class TreeToks extends tree.Tree<Tok | Toks> {
             ret.command = this.cmdOnClick(ret)
             return ret
         } else {                    // item: Tok
-            const ret = new tree.Item(`L${item.Pos.Line}C${item.Pos.Char} · ${TokKind[item.Kind].substring("TokKind".length)}`, false, item)
+            const ret = new tree.Item(`L${item.Pos.Line}C${item.Pos.Char} · ${TokKind[item.Kind]}`, false, item)
             ret.iconPath = new vsc.ThemeIcon(`symbol-${tokKindIcons.get(item.Kind)}`)
             ret.description = item.Src
             ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
