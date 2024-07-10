@@ -27,11 +27,8 @@ enum AstNodeKind {
     CallForm = 1,
     CurlyBraces = 2,
     SquareBrackets = 3,
-    LitInt = 4,
-    LitFloat = 5,
-    LitRune = 6,
-    LitStr = 7,
-    Ident = 8,
+    Ident = 4,
+    Lit = 5,
 }
 type AstNodes = AstNode[]
 
@@ -40,11 +37,8 @@ const tokKindIcons = new Map<AstNodeKind, string>([
     [AstNodeKind.CallForm, "method"],
     [AstNodeKind.CurlyBraces, "namespace"],
     [AstNodeKind.SquareBrackets, "array"],
-    [AstNodeKind.LitInt, "numeric"],
-    [AstNodeKind.LitFloat, "numeric"],
-    [AstNodeKind.LitRune, "string"],
-    [AstNodeKind.LitStr, "string"],
     [AstNodeKind.Ident, "variable"],
+    [AstNodeKind.Lit, "constant"],
 ])
 
 class TreeAst extends tree.Tree<AstNode> {
