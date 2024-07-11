@@ -53,8 +53,8 @@ class TreeToks extends tree.Tree<Tok> {
     override getTreeItem(item: Tok): vsc.TreeItem | Thenable<vsc.TreeItem> {
         const range = rangeTok(item)
         const ret = new tree.Item(`L${range.start.line + 1} C${range.start.character + 1} - L${range.end.line + 1} C${range.end.character + 1} · ${TokKind[item.Kind]}`, false, item)
-        ret.iconPath = new vsc.ThemeIcon(`${tokKindIcons.get(item.Kind)}`)
-        ret.description = item.Src
+        ret.iconPath = new vsc.ThemeIcon((item.Src.charCodeAt(0) == 16) ? "arrow-right" : ((item.Src.charCodeAt(0) == 17) ? "arrow-left" : tokKindIcons.get(item.Kind)!))
+        ret.description = (item.Src.charCodeAt(0) == 16) ? "<indent>" : ((item.Src.charCodeAt(0) == 17) ? "<outdent>" : item.Src)
         ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
         ret.command = this.cmdOnClick(ret)
         return ret

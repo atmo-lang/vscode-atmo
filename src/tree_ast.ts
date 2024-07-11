@@ -50,7 +50,7 @@ class TreeAst extends tree.Tree<AstNode> {
         const range = rangeNode(item)
         const ret = new tree.Item(`L${range.start.line + 1} C${range.start.character + 1} - L${range.end.line + 1} C${range.end.character + 1} · ${AstNodeKind[item.Kind]}`,
             (item.ChildNodes && item.ChildNodes.length) ? true : false, item)
-        ret.iconPath = new vsc.ThemeIcon(`${tokKindIcons.get(item.Kind)}`)
+        ret.iconPath = new vsc.ThemeIcon(tokKindIcons.get(item.Kind)!)
         ret.description = item.Src
         ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
         ret.command = this.cmdOnClick(ret)
