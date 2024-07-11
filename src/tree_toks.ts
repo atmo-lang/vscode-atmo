@@ -8,13 +8,6 @@ export let treeToks: TreeToks
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
         vsc.window.registerTreeDataProvider('atmoVcToks', treeToks = new TreeToks(ctx, "toks")),
-        vsc.window.onDidChangeActiveTextEditor(_ => {
-            treeToks.refresh()
-        }),
-        vsc.workspace.onDidChangeTextDocument((evt) => {
-            if (evt.contentChanges && evt.contentChanges.length)
-                treeToks.refresh()
-        }),
     ]
 }
 
@@ -58,7 +51,8 @@ class TreeToks extends tree.Tree<Tok> {
     }
 
     override getTreeItem(item: Tok): vsc.TreeItem | Thenable<vsc.TreeItem> {
-        const ret = new tree.Item(`L${item.Pos.Line}C${item.Pos.Char} · ${TokKind[item.Kind]}`, false, item)
+        const range = rangeTok(item)
+        const ret = new tree.Item(`L${range.start.line + 1} C${range.start.character + 1} - L${range.end.line + 1} C${range.end.character + 1} · ${TokKind[item.Kind]}`, false, item)
         ret.iconPath = new vsc.ThemeIcon(`${tokKindIcons.get(item.Kind)}`)
         ret.description = item.Src
         ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
@@ -67,13 +61,11 @@ class TreeToks extends tree.Tree<Tok> {
     }
 
     override async getChildren(item?: Tok | undefined): Promise<Toks> {
-        const ed = vsc.window.activeTextEditor
-
-        if (item || (!main.lspClient) || (!ed) || (!ed.document) || (ed.document.languageId !== 'atmo'))
+        if (item || (!main.lspClient) || !this.doc)
             return []
 
         const ret: Toks | undefined = await main.lspClient.sendRequest('workspace/executeCommand',
-            { command: 'getSrcFileToks', arguments: [ed.document.uri.fsPath] } as lsp.ExecuteCommandParams)
+            { command: 'getSrcFileToks', arguments: [this.doc.uri.fsPath] } as lsp.ExecuteCommandParams)
 
         return ret ?? []
     }

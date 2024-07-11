@@ -9,13 +9,6 @@ export let treeAstOrig: TreeAst
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
         vsc.window.registerTreeDataProvider('atmoVcAstOrig', treeAstOrig = new TreeAst(ctx, "astOrig")),
-        vsc.window.onDidChangeActiveTextEditor(_ => {
-            treeAstOrig.refresh()
-        }),
-        vsc.workspace.onDidChangeTextDocument((evt) => {
-            if (evt.contentChanges && evt.contentChanges.length)
-                treeAstOrig.refresh()
-        }),
     ]
 }
 
@@ -55,7 +48,7 @@ class TreeAst extends tree.Tree<AstNode> {
 
     override getTreeItem(item: AstNode): vsc.TreeItem | Thenable<vsc.TreeItem> {
         const range = rangeNode(item)
-        const ret = new tree.Item(`L${range.start.line + 1}C${range.start.character + 1}-L${range.end.line + 1}C${range.end.character + 1} · ${AstNodeKind[item.Kind]}`,
+        const ret = new tree.Item(`L${range.start.line + 1} C${range.start.character + 1} - L${range.end.line + 1} C${range.end.character + 1} · ${AstNodeKind[item.Kind]}`,
             (item.ChildNodes && item.ChildNodes.length) ? true : false, item)
         ret.iconPath = new vsc.ThemeIcon(`${tokKindIcons.get(item.Kind)}`)
         ret.description = item.Src
@@ -65,16 +58,14 @@ class TreeAst extends tree.Tree<AstNode> {
     }
 
     override async getChildren(item?: AstNode | undefined): Promise<AstNodes> {
-        const ed = vsc.window.activeTextEditor
-
-        if ((!main.lspClient) || (!ed) || (!ed.document) || (ed.document.languageId !== 'atmo'))
+        if ((!main.lspClient) || !this.doc)
             return []
 
         if (item)
             return item.ChildNodes
 
         const ret: AstNodes | undefined = await main.lspClient.sendRequest('workspace/executeCommand',
-            { command: 'getSrcFileAstOrig', arguments: [ed.document.uri.fsPath] } as lsp.ExecuteCommandParams)
+            { command: 'getSrcFileAstOrig', arguments: [this.doc.uri.fsPath] } as lsp.ExecuteCommandParams)
         if (ret && Array.isArray(ret) && ret.length) {
             walkNodes(ret, (node) => {
                 if (node.ChildNodes)
