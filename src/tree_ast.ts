@@ -9,8 +9,13 @@ export let treeAstOrig: TreeAst
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
         vsc.window.registerTreeDataProvider('atmoVcAstOrig', treeAstOrig = new TreeAst(ctx, "astOrig")),
-        vsc.window.onDidChangeActiveTextEditor(treeAstOrig.refresh.bind(treeAstOrig)),
-        vsc.workspace.onDidChangeTextDocument(treeAstOrig.refresh.bind(treeAstOrig)),
+        vsc.window.onDidChangeActiveTextEditor(_ => {
+            treeAstOrig.refresh()
+        }),
+        vsc.workspace.onDidChangeTextDocument((evt) => {
+            if (evt.contentChanges && evt.contentChanges.length)
+                treeAstOrig.refresh()
+        }),
     ]
 }
 

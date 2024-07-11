@@ -8,8 +8,13 @@ export let treeToks: TreeToks
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
         vsc.window.registerTreeDataProvider('atmoVcToks', treeToks = new TreeToks(ctx, "toks")),
-        vsc.window.onDidChangeActiveTextEditor(treeToks.refresh.bind(treeToks)),
-        vsc.workspace.onDidChangeTextDocument(treeToks.refresh.bind(treeToks)),
+        vsc.window.onDidChangeActiveTextEditor(_ => {
+            treeToks.refresh()
+        }),
+        vsc.workspace.onDidChangeTextDocument((evt) => {
+            if (evt.contentChanges && evt.contentChanges.length)
+                treeToks.refresh()
+        }),
     ]
 }
 

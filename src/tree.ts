@@ -27,5 +27,7 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
     }
 
     abstract onItemClick(_: Item<T>): void;
-    refresh() { this.eventEmitter.fire(undefined) }
+    refresh() {
+        this.eventEmitter.fire(undefined)
+    }
 }
