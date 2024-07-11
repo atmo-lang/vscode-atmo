@@ -35,7 +35,6 @@ enum TokKind {
     LitFloat = 9,
 }
 export type Toks = Tok[]
-type TopLevelToksChunks = Toks[]
 
 const tokKindIcons = new Map<TokKind, string>([
     [TokKind.Err, "event"],
@@ -50,56 +49,39 @@ const tokKindIcons = new Map<TokKind, string>([
     [TokKind.LitFloat, "numeric"],
 ])
 
-class TreeToks extends tree.Tree<Tok | Toks> {
-    cmdOnClick(it: tree.Item<Tok | Toks>): vsc.Command {
+class TreeToks extends tree.Tree<Tok> {
+    cmdOnClick(it: tree.Item<Tok>): vsc.Command {
         return { command: this.cmdName, arguments: [it], title: "Reveal in text editor" }
     }
 
-    override getTreeItem(item: Tok | Toks): vsc.TreeItem | Thenable<vsc.TreeItem> {
-        if (Array.isArray(item)) {  // item: Toks
-            const ret = new tree.Item(`L${item[0].Pos.Line}-${item[item.length - 1].Pos.Line}`, true, item)
-            ret.description = item.map((_) => _.Src).join(" ")
-            ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
-            ret.command = this.cmdOnClick(ret)
-            return ret
-        } else {                    // item: Tok
-            const ret = new tree.Item(`L${item.Pos.Line}C${item.Pos.Char} · ${TokKind[item.Kind]}`, false, item)
-            ret.iconPath = new vsc.ThemeIcon(`symbol-${tokKindIcons.get(item.Kind)}`)
-            ret.description = item.Src
-            ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
-            ret.command = this.cmdOnClick(ret)
-            return ret
-        }
+    override getTreeItem(item: Tok): vsc.TreeItem | Thenable<vsc.TreeItem> {
+        const ret = new tree.Item(`L${item.Pos.Line}C${item.Pos.Char} · ${TokKind[item.Kind]}`, false, item)
+        ret.iconPath = new vsc.ThemeIcon(`symbol-${tokKindIcons.get(item.Kind)}`)
+        ret.description = item.Src
+        ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
+        ret.command = this.cmdOnClick(ret)
+        return ret
     }
 
-    override async getChildren(item?: Tok | Toks | undefined): Promise<Toks | TopLevelToksChunks> {
+    override async getChildren(item?: Tok | undefined): Promise<Toks> {
         const ed = vsc.window.activeTextEditor
-
-        if (item && Array.isArray(item))
-            return item
 
         if (item || (!main.lspClient) || (!ed) || (!ed.document) || (ed.document.languageId !== 'atmo'))
             return []
 
-        const ret: TopLevelToksChunks | undefined = await main.lspClient.sendRequest('workspace/executeCommand',
+        const ret: Toks | undefined = await main.lspClient.sendRequest('workspace/executeCommand',
             { command: 'getSrcFileToks', arguments: [ed.document.uri.fsPath] } as lsp.ExecuteCommandParams)
 
-        if (ret && Array.isArray(ret) && ret.length) {
-            ret.forEach((toks: Toks) => {
-                toks.forEach((tok) => { tok.parent = toks })
-            })
-            return ret
-        }
-        return []
+        return ret ?? []
     }
 
-    override getParent?(item: Tok | Toks): vsc.ProviderResult<Tok | Toks> {
-        return ((!Array.isArray(item)) ? item.parent : undefined)
+    override getParent?(item: Tok): vsc.ProviderResult<Tok> {
+        return undefined
     }
 
-    override onItemClick(it: tree.Item<Tok | Toks>): void {
+    override onItemClick(it: tree.Item<Tok>): void {
         if (it && vsc.window.activeTextEditor) {
-            const range = Array.isArray(it.data) ? rangeToks(it.data) : rangeTok(it.data)
+            const range = rangeTok(it.data)
             vsc.window.activeTextEditor.selections = [new vsc.Selection(range.start, range.end)]
             vsc.window.showTextDocument(vsc.window.activeTextEditor.document)
         }
