@@ -23,7 +23,6 @@ export type Tok = {
     parent: Toks
 }
 enum TokKind {
-    Err = 0,
     Brace = 1,
     Sep = 2,
     Op = 3,
@@ -37,16 +36,15 @@ enum TokKind {
 export type Toks = Tok[]
 
 const tokKindIcons = new Map<TokKind, string>([
-    [TokKind.Err, "event"],
-    [TokKind.Brace, "namespace"],
-    [TokKind.Op, "operator"],
+    [TokKind.Brace, "symbol-namespace"],
+    [TokKind.Op, "symbol-operator"],
     [TokKind.Sep, "blank"],
-    [TokKind.Ident, "key"],
+    [TokKind.Ident, "symbol-key"],
     [TokKind.Comment, "comment"],
-    [TokKind.LitRune, "string"],
-    [TokKind.LitStr, "string"],
-    [TokKind.LitInt, "numeric"],
-    [TokKind.LitFloat, "numeric"],
+    [TokKind.LitRune, "symbol-string"],
+    [TokKind.LitStr, "symbol-string"],
+    [TokKind.LitInt, "symbol-numeric"],
+    [TokKind.LitFloat, "symbol-numeric"],
 ])
 
 class TreeToks extends tree.Tree<Tok> {
@@ -56,7 +54,7 @@ class TreeToks extends tree.Tree<Tok> {
 
     override getTreeItem(item: Tok): vsc.TreeItem | Thenable<vsc.TreeItem> {
         const ret = new tree.Item(`L${item.Pos.Line}C${item.Pos.Char} · ${TokKind[item.Kind]}`, false, item)
-        ret.iconPath = new vsc.ThemeIcon(`symbol-${tokKindIcons.get(item.Kind)}`)
+        ret.iconPath = new vsc.ThemeIcon(`${tokKindIcons.get(item.Kind)}`)
         ret.description = item.Src
         ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
         ret.command = this.cmdOnClick(ret)
