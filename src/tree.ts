@@ -26,13 +26,6 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
             this.refresh()
         })
 
-        vsc.workspace.onDidOpenTextDocument((it) => {
-            this.doc = undefined
-            if (it.languageId == "atmo")
-                this.doc = it
-            this.refresh()
-        })
-
         vsc.workspace.onDidCloseTextDocument((it) => {
             if (this.doc && it && this.doc.fileName === it.fileName) {
                 this.doc = undefined
@@ -41,8 +34,9 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
         })
 
         vsc.workspace.onDidChangeTextDocument((evt) => {
+            const ed = vsc.window.activeTextEditor
             if ((evt.document.languageId == "atmo") && evt.contentChanges && evt.contentChanges.length &&
-                ((!this.doc) || (evt.document.fileName === this.doc.fileName))) {
+                (this.doc ? (this.doc.fileName === evt.document.fileName) : (ed && (evt.document.fileName === ed.document.fileName)))) {
                 this.doc = evt.document
                 this.refresh()
             }
@@ -54,7 +48,7 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
                 this.doc = ed.document
                 this.refresh()
             }
-        }, 1234)
+        }, 1)
     }
 
     abstract getTreeItem(element: T): vsc.TreeItem | Thenable<vsc.TreeItem>;
