@@ -23,7 +23,7 @@ export type Tok = {
     parent: Toks
 }
 enum TokKind {
-    Err = 0,
+    Never = 0,
     Brace = 1,
     Sep = 2,
     Op = 3,
@@ -38,7 +38,7 @@ export type Toks = Tok[]
 type TopLevelToksChunks = Toks[]
 
 const tokKindIcons = new Map<TokKind, string>([
-    [TokKind.Err, "event"],
+    [TokKind.Never, "event"],
     [TokKind.Brace, "namespace"],
     [TokKind.Op, "operator"],
     [TokKind.Sep, "blank"],
