@@ -17,10 +17,10 @@ export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
 type AstNode = {
     parent: AstNode
     Kind: AstNodeKind
-    Children: AstNodes
+    ChildNodes: AstNodes
     Toks: tree_toks.Toks
     Src: string
-    LitAtom: number | string | null
+    Lit: number | string | null
 }
 enum AstNodeKind {
     Err = 0,
@@ -49,7 +49,7 @@ class TreeAst extends tree.Tree<AstNode> {
     override getTreeItem(item: AstNode): vsc.TreeItem | Thenable<vsc.TreeItem> {
         const range = rangeNode(item)
         const ret = new tree.Item(`L${range.start.line + 1}C${range.start.character + 1}-L${range.end.line + 1}C${range.end.character + 1} · ${AstNodeKind[item.Kind]}`,
-            (item.Children && item.Children.length) ? true : false, item)
+            (item.ChildNodes && item.ChildNodes.length) ? true : false, item)
         ret.iconPath = new vsc.ThemeIcon(`symbol-${tokKindIcons.get(item.Kind)}`)
         ret.description = item.Src
         ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
@@ -64,14 +64,14 @@ class TreeAst extends tree.Tree<AstNode> {
             return []
 
         if (item)
-            return item.Children
+            return item.ChildNodes
 
         const ret: AstNodes | undefined = await main.lspClient.sendRequest('workspace/executeCommand',
             { command: 'getSrcFileAstOrig', arguments: [ed.document.uri.fsPath] } as lsp.ExecuteCommandParams)
         if (ret && Array.isArray(ret) && ret.length) {
             walkNodes(ret, (node) => {
-                if (node.Children)
-                    for (const sub_node of node.Children)
+                if (node.ChildNodes)
+                    for (const sub_node of node.ChildNodes)
                         sub_node.parent = node
             })
             return ret
@@ -100,7 +100,7 @@ function rangeNode(node: AstNode): vsc.Range {
 function walkNodes(nodes: AstNodes, onNode: (_: AstNode) => void) {
     for (const node of nodes) {
         onNode(node)
-        if (node.Children)
-            walkNodes(node.Children, onNode)
+        if (node.ChildNodes)
+            walkNodes(node.ChildNodes, onNode)
     }
 }
