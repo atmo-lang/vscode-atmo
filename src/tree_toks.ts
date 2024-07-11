@@ -21,11 +21,11 @@ export type Tok = {
     parent: Toks
 }
 enum TokKind {
-    Brace = 1,
-    Sep = 2,
-    Op = 3,
-    Ident = 4,
-    Comment = 5,
+    Comment = 1,
+    Brace = 2,
+    Sep = 3,
+    Op = 4,
+    Ident = 5,
     LitRune = 6,
     LitStr = 7,
     LitInt = 8,
