@@ -11,6 +11,7 @@ export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     ]
 }
 
+export type Toks = Tok[]
 export type Tok = {
     Kind: TokKind
     Pos: {
@@ -31,7 +32,6 @@ enum TokKind {
     LitInt = 8,
     LitFloat = 9,
 }
-export type Toks = Tok[]
 
 const tokKindIcons = new Map<TokKind, string>([
     [TokKind.Brace, "symbol-namespace"],
