@@ -25,8 +25,8 @@ enum TokKind {
     Comment = 1,
     Brace = 2,
     Sep = 3,
-    Op = 4,
-    Ident = 5,
+    IdentWord = 4,
+    IdentOpish = 5,
     LitRune = 6,
     LitStr = 7,
     LitInt = 8,
@@ -35,9 +35,9 @@ enum TokKind {
 
 const tokKindIcons = new Map<TokKind, string>([
     [TokKind.Brace, "symbol-namespace"],
-    [TokKind.Op, "symbol-operator"],
+    [TokKind.IdentOpish, "symbol-operator"],
     [TokKind.Sep, "blank"],
-    [TokKind.Ident, "symbol-key"],
+    [TokKind.IdentWord, "symbol-key"],
     [TokKind.Comment, "comment"],
     [TokKind.LitRune, "symbol-string"],
     [TokKind.LitStr, "symbol-string"],
