@@ -27,13 +27,12 @@ enum TokKind {
     Dedent = 3,
     Comment = 4,
     Brace = 5,
-    Sep = 6,
-    IdentWord = 7,
-    IdentOpish = 8,
-    LitRune = 9,
-    LitStr = 10,
-    LitInt = 11,
-    LitFloat = 12,
+    IdentWord = 6,
+    IdentOpish = 7,
+    LitRune = 8,
+    LitStr = 9,
+    LitInt = 10,
+    LitFloat = 11,
 }
 
 const tokKindIcons = new Map<TokKind, string>([
@@ -42,7 +41,6 @@ const tokKindIcons = new Map<TokKind, string>([
     [TokKind.Dedent, "arrow-left"],
     [TokKind.Comment, "comment"],
     [TokKind.Brace, "symbol-array"],
-    [TokKind.Sep, "blank"],
     [TokKind.IdentWord, "symbol-key"],
     [TokKind.IdentOpish, "symbol-operator"],
     [TokKind.LitRune, "symbol-string"],

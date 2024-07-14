@@ -22,20 +22,16 @@ type AstNode = {
 }
 enum AstNodeKind {
     Err = 0,
-    Multiple = 1,
-    CurlyBraces = 2,
-    SquareBrackets = 3,
-    Ident = 4,
-    Lit = 5,
-    Comment = 6,
+    Comment = 1,
+    Ident = 2,
+    Lit = 3,
+    Multiple = 4,
 }
 type AstNodes = AstNode[]
 
 const tokKindIcons = new Map<AstNodeKind, string>([
     [AstNodeKind.Err, "symbol-event"],
-    [AstNodeKind.Multiple, "symbol-method"],
-    [AstNodeKind.CurlyBraces, "symbol-namespace"],
-    [AstNodeKind.SquareBrackets, "symbol-array"],
+    [AstNodeKind.Multiple, "symbol-namespace"],
     [AstNodeKind.Ident, "symbol-variable"],
     [AstNodeKind.Lit, "symbol-constant"],
     [AstNodeKind.Comment, "comment"],
