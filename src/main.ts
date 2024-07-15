@@ -38,28 +38,11 @@ export function activate(ctx: vsc.ExtensionContext) {
 				provideCodeActions: codeActions,
 			}),
 
-			// with vsc's language-client lib, folder renames and deletes dont  trigger
-			// LSP workspace / didChangeWatchedFiles notifications, so do it manually......
+			// with vsc's LSP-clienting lib, folder renames and deletes dont trigger
+			// LSP workspace/didChangeWatchedFiles notifications, so poke it manually......
 			vsc.workspace.onDidRenameFiles((evt) => {
-				const changes: vsc_lsp.FileEvent[] = []
-				for (const it of evt.files)
-					if (!node_path.extname(it.oldUri.fsPath)) // is dir
-						changes.push({ uri: it.oldUri.toString(), type: vsc_lsp.FileChangeType.Deleted },
-							{ uri: it.newUri.toString(), type: vsc_lsp.FileChangeType.Created })
-				if (changes.length)
-					lspClient?.sendNotification('workspace/didChangeWatchedFiles', {
-						changes: changes,
-					} as vsc_lsp.DidChangeWatchedFilesParams)
 			}),
 			vsc.workspace.onDidDeleteFiles((evt) => {
-				const changes: vsc_lsp.FileEvent[] = []
-				for (const it of evt.files)
-					if (!node_path.extname(it.fsPath)) // is dir
-						changes.push({ uri: it.toString(), type: vsc_lsp.FileChangeType.Deleted })
-				if (changes.length)
-					lspClient?.sendNotification('workspace/didChangeWatchedFiles', {
-						changes: changes,
-					} as vsc_lsp.DidChangeWatchedFilesParams)
 			})
 		)
 
