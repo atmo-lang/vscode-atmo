@@ -22,23 +22,21 @@ export type Tok = {
     parent: Toks
 }
 enum TokKind {
-    NewLine = 1,
-    Indent = 2,
-    Dedent = 3,
-    Comment = 4,
-    Brace = 5,
-    IdentWord = 6,
-    IdentOpish = 7,
-    LitRune = 8,
-    LitStr = 9,
-    LitInt = 10,
-    LitFloat = 11,
+    Begin = 1,
+    End = 2,
+    Comment = 3,
+    Brace = 4,
+    IdentWord = 5,
+    IdentOpish = 6,
+    LitRune = 7,
+    LitStr = 8,
+    LitInt = 9,
+    LitFloat = 10,
 }
 
 const tokKindIcons = new Map<TokKind, string>([
-    [TokKind.NewLine, "symbol-namespace"],
-    [TokKind.Indent, "arrow-right"],
-    [TokKind.Dedent, "arrow-left"],
+    [TokKind.Begin, "arrow-right"],
+    [TokKind.End, "arrow-left"],
     [TokKind.Comment, "comment"],
     [TokKind.Brace, "symbol-array"],
     [TokKind.IdentWord, "symbol-key"],
