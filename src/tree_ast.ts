@@ -43,11 +43,11 @@ class TreeAst extends tree.Tree<AstNode> {
     }
 
     override getTreeItem(item: AstNode): vsc.TreeItem | Thenable<vsc.TreeItem> {
-        const range = rangeNode(item)
-        const ret = new tree.Item(`L${range.start.line + 1} C${range.start.character + 1} - L${range.end.line + 1} C${range.end.character + 1} · ${AstNodeKind[item.Kind]}`,
+        const range: vsc.Range | undefined = item.Toks ? rangeNode(item) : undefined
+        const ret = new tree.Item(`L${(range?.start.line ?? -1) + 1} C${(range?.start.character ?? -1) + 1} - L${(range?.end.line ?? -1) + 1} C${(range?.end.character ?? -1) + 1} · ${AstNodeKind[item.Kind]}`,
             (item.ChildNodes && item.ChildNodes.length) ? true : false, item)
         ret.iconPath = new vsc.ThemeIcon(tokKindIcons.get(item.Kind)!)
-        ret.description = item.Src
+        ret.description = "" + item.Src
         ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
         ret.command = this.cmdOnClick(ret)
         return ret
@@ -58,13 +58,13 @@ class TreeAst extends tree.Tree<AstNode> {
             return []
 
         if (item)
-            return item.ChildNodes
+            return item.ChildNodes ?? []
 
         const ret: AstNodes | undefined = await main.lspClient.sendRequest('workspace/executeCommand',
             { command: 'getSrcFileAstOrig', arguments: [this.doc.uri.fsPath] } as lsp.ExecuteCommandParams)
         if (ret && Array.isArray(ret) && ret.length) {
             walkNodes(ret, (node) => {
-                if (node.ChildNodes)
+                if (node.ChildNodes && node.ChildNodes.length)
                     for (const sub_node of node.ChildNodes)
                         sub_node.parent = node
             })
@@ -78,7 +78,7 @@ class TreeAst extends tree.Tree<AstNode> {
     }
 
     override onItemClick(it: tree.Item<AstNode>): void {
-        if (it && vsc.window.activeTextEditor) {
+        if (it.data.Toks && vsc.window.activeTextEditor) {
             const range = rangeNode(it.data)
             vsc.window.activeTextEditor.selections = [new vsc.Selection(range.start, range.end)]
             vsc.window.showTextDocument(vsc.window.activeTextEditor.document)
