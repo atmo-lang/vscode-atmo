@@ -93,8 +93,10 @@
     },
     "views": {
       "atmoVc": [
-        { "id": "atmoVcToks", "name": "Parsing: Lexemes", "icon": "$(list-flat)" },
-        { "id": "atmoVcAstOrig", "name": "Parsing: AST", "icon": "$(list-tree)" }
+        { "id": "atmoVcPkgs", "name": "In-Session Packages", "icon": "$(list-tree)" },
+        { "id": "atmoVcToks", "name": "Tokenization: Lexemes", "icon": "$(list-flat)" },
+        { "id": "atmoVcAst", "name": "Parsing: AST", "icon": "$(list-tree)" },
+        { "id": "atmoVcEst", "name": "Expansion: EST", "icon": "$(list-tree)" }
       ]
     }
   },

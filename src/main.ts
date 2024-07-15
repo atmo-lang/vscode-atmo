@@ -1,15 +1,22 @@
 import * as vsc from 'vscode'
+import * as node_process from 'process'
+
 import * as lsp from './lsp'
 import * as repl from './repl'
-import * as tree_ast from './tree_ast'
+import * as tree_pkgs from './tree_pkgs'
 import * as tree_toks from './tree_toks'
+import * as tree_ast from './tree_ast'
 
 
+export let atmoPath = process.env["ATMO_PATH"] ?? "/home/_/c/at"
 export let lspClient: lsp.Client | null = null
 let regDisp: (...items: { dispose(): any }[]) => number
 let lastEvalExpr: string = ""
 
 export function activate(ctx: vsc.ExtensionContext) {
+	if (!atmoPath.endsWith("/"))
+		atmoPath += "/"
+
 	regDisp = ctx.subscriptions.push.bind(ctx.subscriptions)
 
 	// bring up LSP client unless disabled in user config
@@ -30,6 +37,7 @@ export function activate(ctx: vsc.ExtensionContext) {
 		})
 	}
 
+	regDisp(...tree_pkgs.init(ctx))
 	regDisp(...tree_toks.init(ctx))
 	regDisp(...tree_ast.init(ctx))
 }

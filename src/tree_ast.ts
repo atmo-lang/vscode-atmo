@@ -4,11 +4,11 @@ import * as main from './main'
 import * as tree from './tree'
 import * as tree_toks from './tree_toks'
 
-export let treeAstOrig: TreeAst
+let treeAst: TreeAst
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
-        vsc.window.registerTreeDataProvider('atmoVcAstOrig', treeAstOrig = new TreeAst(ctx, "astOrig")),
+        vsc.window.registerTreeDataProvider('atmoVcAst', treeAst = new TreeAst(ctx, "ast", true)),
     ]
 }
 
@@ -61,7 +61,7 @@ class TreeAst extends tree.Tree<AstNode> {
             return item.ChildNodes ?? []
 
         const ret: AstNodes | undefined = await main.lspClient.sendRequest('workspace/executeCommand',
-            { command: 'getSrcFileAstOrig', arguments: [this.doc.uri.fsPath] } as lsp.ExecuteCommandParams)
+            { command: 'getSrcFileAst', arguments: [this.doc.uri.fsPath] } as lsp.ExecuteCommandParams)
         if (ret && Array.isArray(ret) && ret.length) {
             walkNodes(ret, (node) => {
                 if (node.ChildNodes && node.ChildNodes.length)

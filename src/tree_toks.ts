@@ -3,11 +3,11 @@ import * as lsp from 'vscode-languageclient/node'
 import * as main from './main'
 import * as tree from './tree'
 
-export let treeToks: TreeToks
+let treeToks: TreeToks
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
-        vsc.window.registerTreeDataProvider('atmoVcToks', treeToks = new TreeToks(ctx, "toks")),
+        vsc.window.registerTreeDataProvider('atmoVcToks', treeToks = new TreeToks(ctx, "toks", true)),
     ]
 }
 

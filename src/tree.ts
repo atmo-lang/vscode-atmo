@@ -15,40 +15,45 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
     cmdName: string
     doc: vsc.TextDocument | undefined
 
-    constructor(ctx: vsc.ExtensionContext, moniker: string) {
+    constructor(ctx: vsc.ExtensionContext, moniker: string, docBased: boolean) {
         this.cmdName = "atmo.tree.onClick_" + moniker
         ctx.subscriptions.push(vsc.commands.registerCommand(this.cmdName, this.onItemClick.bind(this)))
 
-        vsc.window.onDidChangeActiveTextEditor((evt) => {
-            this.doc = undefined
-            if (evt && (evt.document.languageId == "atmo"))
-                this.doc = evt.document
-            this.refresh()
-        })
+        if (docBased)
+            ctx.subscriptions.push(
+                vsc.window.onDidChangeActiveTextEditor((evt) => {
+                    this.doc = undefined
+                    if (evt && (evt.document.languageId == "atmo"))
+                        this.doc = evt.document
+                    this.refresh()
+                }),
 
-        vsc.workspace.onDidCloseTextDocument((it) => {
-            if (this.doc && it && this.doc.fileName === it.fileName) {
-                this.doc = undefined
-                this.refresh()
-            }
-        })
+                vsc.workspace.onDidCloseTextDocument((it) => {
+                    if (this.doc && it && this.doc.fileName === it.fileName) {
+                        this.doc = undefined
+                        this.refresh()
+                    }
+                }),
 
-        vsc.workspace.onDidChangeTextDocument((evt) => {
-            const ed = vsc.window.activeTextEditor
-            if ((evt.document.languageId == "atmo") && evt.contentChanges && evt.contentChanges.length &&
-                (this.doc ? (this.doc.fileName === evt.document.fileName) : (ed && (evt.document.fileName === ed.document.fileName)))) {
-                this.doc = evt.document
-                this.refresh()
-            }
-        })
+                vsc.workspace.onDidChangeTextDocument((evt) => {
+                    const ed = vsc.window.activeTextEditor
+                    if ((evt.document.languageId == "atmo") && evt.contentChanges && evt.contentChanges.length &&
+                        (this.doc ? (this.doc.fileName === evt.document.fileName) : (ed && (evt.document.fileName === ed.document.fileName)))) {
+                        this.doc = evt.document
+                        this.refresh()
+                    }
+                }),
+            )
 
         setTimeout(() => {
             const ed = vsc.window.activeTextEditor
-            if (ed && (ed.document.languageId == "atmo")) {
+            if (!docBased)
+                this.refresh()
+            else if (ed && (ed.document.languageId == "atmo")) {
                 this.doc = ed.document
                 this.refresh()
             }
-        }, 1)
+        }, 321)
     }
 
     abstract getTreeItem(element: T): vsc.TreeItem | Thenable<vsc.TreeItem>;
