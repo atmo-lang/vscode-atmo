@@ -25,13 +25,13 @@ enum AstNodeKind {
     Comment = 1,
     Ident = 2,
     Lit = 3,
-    Multiple = 4,
+    Group = 4,
 }
 type AstNodes = AstNode[]
 
 const tokKindIcons = new Map<AstNodeKind, string>([
     [AstNodeKind.Err, "symbol-event"],
-    [AstNodeKind.Multiple, "symbol-namespace"],
+    [AstNodeKind.Group, "symbol-namespace"],
     [AstNodeKind.Ident, "symbol-variable"],
     [AstNodeKind.Lit, "symbol-constant"],
     [AstNodeKind.Comment, "comment"],
