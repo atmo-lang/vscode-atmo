@@ -7,7 +7,7 @@ let treePkgs: TreePkgs
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
-        vsc.window.registerTreeDataProvider('atmoVcPkgs', treePkgs = new TreePkgs(ctx, "pkgs", false)),
+        vsc.window.registerTreeDataProvider('atmoVcPkgs', treePkgs = new TreePkgs(ctx, "pkgs", false, true)),
     ]
 }
 
@@ -66,11 +66,6 @@ class TreePkgs extends tree.Tree<SrcPkg | SrcFile> {
     }
 
     override onItemClick(it: tree.Item<SrcPkg | SrcFile>): void {
-        // if (it.data.Toks && vsc.window.activeTextEditor) {
-        //     const range = rangeNode(it.data)
-        //     vsc.window.activeTextEditor.selections = [new vsc.Selection(range.start, range.end)]
-        //     vsc.window.showTextDocument(vsc.window.activeTextEditor.document)
-        // }
     }
 
 }

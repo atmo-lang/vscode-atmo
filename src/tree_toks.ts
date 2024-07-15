@@ -7,7 +7,7 @@ let treeToks: TreeToks
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
-        vsc.window.registerTreeDataProvider('atmoVcToks', treeToks = new TreeToks(ctx, "toks", true)),
+        vsc.window.registerTreeDataProvider('atmoVcToks', treeToks = new TreeToks(ctx, "toks", true, false)),
     ]
 }
 

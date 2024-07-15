@@ -15,11 +15,11 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
     cmdName: string
     doc: vsc.TextDocument | undefined
 
-    constructor(ctx: vsc.ExtensionContext, moniker: string, docBased: boolean) {
+    constructor(ctx: vsc.ExtensionContext, moniker: string, refreshOnDocEvents: boolean, refreshOnFsEvents: boolean) {
         this.cmdName = "atmo.tree.onClick_" + moniker
         ctx.subscriptions.push(vsc.commands.registerCommand(this.cmdName, this.onItemClick.bind(this)))
 
-        if (docBased)
+        if (refreshOnDocEvents)
             ctx.subscriptions.push(
                 vsc.window.onDidChangeActiveTextEditor((evt) => {
                     this.doc = undefined
@@ -45,9 +45,17 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
                 }),
             )
 
+        if (refreshOnFsEvents)
+            ctx.subscriptions.push(
+                vsc.workspace.onDidChangeWorkspaceFolders((evt) => { this.refresh(evt) }),
+                vsc.workspace.onDidDeleteFiles((evt) => { this.refresh(evt) }),
+                vsc.workspace.onDidRenameFiles((evt) => { this.refresh(evt) }),
+                vsc.workspace.onDidCreateFiles((evt) => { this.refresh(evt) }),
+            )
+
         setTimeout(() => {
             const ed = vsc.window.activeTextEditor
-            if (!docBased)
+            if (!refreshOnDocEvents)
                 this.refresh()
             else if (ed && (ed.document.languageId == "atmo")) {
                 this.doc = ed.document
@@ -65,7 +73,7 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
 
     abstract onItemClick(_: Item<T>): void;
     refresh(evt?: any) {
-        if (evt)
+        if (evt && false)
             console.log(evt)
         this.eventEmitter.fire(undefined)
     }

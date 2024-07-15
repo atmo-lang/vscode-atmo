@@ -8,7 +8,7 @@ let treeAst: TreeAst
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
-        vsc.window.registerTreeDataProvider('atmoVcAst', treeAst = new TreeAst(ctx, "ast", true)),
+        vsc.window.registerTreeDataProvider('atmoVcAst', treeAst = new TreeAst(ctx, "ast", true, false)),
     ]
 }
 
