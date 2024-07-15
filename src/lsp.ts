@@ -2,10 +2,6 @@ import * as vsc from 'vscode'
 import * as lsp from 'vscode-languageclient/node'
 
 
-export type Client = lsp.LanguageClient
-export type ExecuteCommandParams = lsp.ExecuteCommandParams
-
-
 export function init(ctx: vsc.ExtensionContext): (lsp.LanguageClient | null) {
     const cfg = vsc.workspace.getConfiguration()
     const cmd_name_and_args = cfg.get<string[]>('atmo.lsp.cmd', ['atmo', "lsp"])

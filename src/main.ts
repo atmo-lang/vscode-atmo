@@ -1,5 +1,6 @@
 import * as vsc from 'vscode'
-import * as node_process from 'process'
+import * as vsc_lsp from 'vscode-languageclient/node'
+import * as node_path from 'path'
 
 import * as lsp from './lsp'
 import * as repl from './repl'
@@ -9,7 +10,7 @@ import * as tree_ast from './tree_ast'
 
 
 export let atmoPath = process.env["ATMO_PATH"] ?? "/home/_/c/at"
-export let lspClient: lsp.Client | null = null
+export let lspClient: vsc_lsp.LanguageClient | null = null
 let regDisp: (...items: { dispose(): any }[]) => number
 let lastEvalExpr: string = ""
 
@@ -29,13 +30,38 @@ export function activate(ctx: vsc.ExtensionContext) {
 	regDisp(vsc.workspace.registerNotebookSerializer('atmo-repl', new repl.NotebookSerializer()))
 
 	// set up Eval code actions
-	if (lspClient) {
-		regDisp(vsc.commands.registerCommand('atmo.cmd.eval.quick', cmdEvalQuick))
-		regDisp(vsc.commands.registerCommand('atmo.cmd.eval.repl', cmdReplFromExpr))
-		vsc.languages.registerCodeActionsProvider({ scheme: 'file', language: 'atmo' }, {
-			provideCodeActions: codeActions,
-		})
-	}
+	if (lspClient)
+		regDisp(
+			vsc.commands.registerCommand('atmo.cmd.eval.quick', cmdEvalQuick),
+			vsc.commands.registerCommand('atmo.cmd.eval.repl', cmdReplFromExpr),
+			vsc.languages.registerCodeActionsProvider({ scheme: 'file', language: 'atmo' }, {
+				provideCodeActions: codeActions,
+			}),
+
+			// with vsc's language-client lib, folder renames and deletes dont  trigger
+			// LSP workspace / didChangeWatchedFiles notifications, so do it manually......
+			vsc.workspace.onDidRenameFiles((evt) => {
+				const changes: vsc_lsp.FileEvent[] = []
+				for (const it of evt.files)
+					if (!node_path.extname(it.oldUri.fsPath)) // is dir
+						changes.push({ uri: it.oldUri.toString(), type: vsc_lsp.FileChangeType.Deleted },
+							{ uri: it.newUri.toString(), type: vsc_lsp.FileChangeType.Created })
+				if (changes.length)
+					lspClient?.sendNotification('workspace/didChangeWatchedFiles', {
+						changes: changes,
+					} as vsc_lsp.DidChangeWatchedFilesParams)
+			}),
+			vsc.workspace.onDidDeleteFiles((evt) => {
+				const changes: vsc_lsp.FileEvent[] = []
+				for (const it of evt.files)
+					if (!node_path.extname(it.fsPath)) // is dir
+						changes.push({ uri: it.toString(), type: vsc_lsp.FileChangeType.Deleted })
+				if (changes.length)
+					lspClient?.sendNotification('workspace/didChangeWatchedFiles', {
+						changes: changes,
+					} as vsc_lsp.DidChangeWatchedFilesParams)
+			})
+		)
 
 	regDisp(...tree_pkgs.init(ctx))
 	regDisp(...tree_toks.init(ctx))
@@ -64,7 +90,7 @@ function cmdEvalQuick(...args: any[]) {
 	if (args && args.length) {
 		args[0] = (args[0] as vsc.TextDocument).fileName
 		lspClient!.sendRequest('workspace/executeCommand',
-			{ command: 'eval-in-file', arguments: args } as lsp.ExecuteCommandParams
+			{ command: 'eval-in-file', arguments: args } as vsc_lsp.ExecuteCommandParams
 		).then(
 			(result: any) =>
 				vsc.window.showInformationMessage("" + result),
