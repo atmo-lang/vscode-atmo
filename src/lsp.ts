@@ -5,6 +5,17 @@ import * as node_path from 'path'
 
 export let client: vsc_lsp.LanguageClient
 
+export type SrcFilePos = {
+    // starts at 1
+    Line: number
+    // starts at 1
+    Char: number
+}
+export type SrcFileSpan = {
+    Start: SrcFilePos
+    End: SrcFilePos
+}
+
 
 export function init(ctx: vsc.ExtensionContext) {
     const cfg = vsc.workspace.getConfiguration()
@@ -61,4 +72,12 @@ export function maybeSendFsRefreshPoke(evt: vsc.FileRenameEvent | vsc.FileDelete
 export function executeCommand<T>(commandName: string, ...args: any[]) {
     return client.sendRequest<T>('workspace/executeCommand',
         { command: commandName, arguments: args } as vsc_lsp.ExecuteCommandParams)
+}
+
+
+export function toVscPos(pos: SrcFilePos): vsc.Position {
+    return new vsc.Position(pos.Line - 1, pos.Char - 1)
+}
+export function toVscRange(span: SrcFileSpan): vsc.Range {
+    return new vsc.Range(toVscPos(span.Start), toVscPos(span.End))
 }

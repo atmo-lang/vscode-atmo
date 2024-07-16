@@ -18,7 +18,11 @@ type EstNodes = EstNode[]
 type EstNode = {
     parent: EstNode
     Kind: EstNodeKind
-    ChildNodes: EstNodes
+    Nodes: EstNodes
+    ClientInfo: {
+        SrcFilePath: string
+        SrcFileSpan?: lsp.SrcFileSpan
+    }
 }
 enum EstNodeKind {
     Ident = 1,
@@ -35,12 +39,12 @@ const nodeKindIcons = new Map<EstNodeKind, string>([
 
 class TreeEst extends tree.Tree<EstNode> {
     cmdOnClick(it: tree.Item<EstNode>): vsc.Command {
-        return { command: this.cmdName, arguments: [it], title: "No-op for now" }
+        return { command: this.cmdName, arguments: [it], title: "Open source" }
     }
 
     override getTreeItem(item: EstNode): vsc.TreeItem | Thenable<vsc.TreeItem> {
         const ret = new tree.Item(`${EstNodeKind[item.Kind]}`,
-            (item.ChildNodes && item.ChildNodes.length) ? true : false, item)
+            (item.Nodes && item.Nodes.length) ? true : false, item)
         ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.Kind)!)
         ret.description = "descr."
         ret.tooltip = "tooltip"
@@ -53,13 +57,13 @@ class TreeEst extends tree.Tree<EstNode> {
             return []
 
         if (item)
-            return item.ChildNodes ?? []
+            return item.Nodes ?? []
 
         const ret: EstNodes | undefined = await lsp.executeCommand('getSrcPkgEst', this.doc.uri.fsPath)
         if (ret && Array.isArray(ret) && ret.length)
             walkNodes(ret, (node) => {
-                if (node.ChildNodes && node.ChildNodes.length)
-                    for (const sub_node of node.ChildNodes)
+                if (node.Nodes && node.Nodes.length)
+                    for (const sub_node of node.Nodes)
                         sub_node.parent = node
             })
         return ret ?? []
@@ -70,6 +74,13 @@ class TreeEst extends tree.Tree<EstNode> {
     }
 
     override onItemClick(it: tree.Item<EstNode>): void {
+        if (it.data && it.data.ClientInfo.SrcFilePath && it.data.ClientInfo.SrcFilePath.length) {
+            const range: vsc.Range | undefined = it.data.ClientInfo.SrcFileSpan ? lsp.toVscRange(it.data.ClientInfo.SrcFileSpan) : undefined
+            vsc.workspace.openTextDocument(it.data.ClientInfo.SrcFilePath).then(
+                (it) => { vsc.window.showTextDocument(it, { selection: range }) },
+                vsc.window.showWarningMessage,
+            )
+        }
     }
 
 }
@@ -77,7 +88,7 @@ class TreeEst extends tree.Tree<EstNode> {
 function walkNodes(nodes: EstNodes, onNode: (_: EstNode) => void) {
     for (const node of nodes) {
         onNode(node)
-        if (node.ChildNodes)
-            walkNodes(node.ChildNodes, onNode)
+        if (node.Nodes)
+            walkNodes(node.Nodes, onNode)
     }
 }

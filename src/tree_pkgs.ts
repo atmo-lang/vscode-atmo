@@ -31,7 +31,7 @@ type SrcFile = {
 
 class TreePkgs extends tree.Tree<SrcPkg | SrcFile> {
     cmdOnClick(it: tree.Item<SrcPkg | SrcFile>): vsc.Command {
-        return { command: this.cmdName, arguments: [it], title: "No-op for now" }
+        return { command: this.cmdName, arguments: [it], title: "Open source file" }
     }
 
     override getTreeItem(item: SrcPkg | SrcFile): vsc.TreeItem | Thenable<vsc.TreeItem> {
@@ -72,6 +72,27 @@ class TreePkgs extends tree.Tree<SrcPkg | SrcFile> {
     }
 
     override onItemClick(it: tree.Item<SrcPkg | SrcFile>): void {
+        const src_pkg = it.data as SrcPkg, src_file = it.data as SrcFile
+
+        if (src_file && src_file.FilePath)
+            vsc.workspace.openTextDocument(src_file.FilePath).then(
+                (it) => { vsc.window.showTextDocument(it, {}) },
+                vsc.window.showWarningMessage,
+            )
+        else if (src_pkg && src_pkg.DirPath) {
+            let uri = vsc.Uri.file(src_pkg.DirPath)
+            const root_folder = vsc.workspace.getWorkspaceFolder(uri)
+            if (!root_folder)
+                vsc.window.showOpenDialog({
+                    canSelectFiles: true, canSelectMany: true, defaultUri: uri,
+                    filters: { 'Atmo': ['at'], 'Any': ['*'] },
+                })
+            else {
+                const root_path = root_folder.uri.fsPath
+                const rel_path = src_pkg.DirPath.substring(root_path.length + (root_path.endsWith(node_path.sep) ? 0 : 1))
+                vsc.commands.executeCommand('workbench.action.quickOpen', rel_path + node_path.sep + '*.at ')
+            }
+        }
     }
 
 }
