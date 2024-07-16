@@ -1,5 +1,4 @@
 import * as vsc from 'vscode'
-import * as vsc_lsp from 'vscode-languageclient/node'
 
 import * as lsp from './lsp'
 import * as tree from './tree'

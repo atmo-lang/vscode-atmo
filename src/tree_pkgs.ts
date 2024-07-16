@@ -1,5 +1,5 @@
 import * as vsc from 'vscode'
-import * as vsc_lsp from 'vscode-languageclient/node'
+import * as node_path from 'path'
 
 import * as main from './main'
 import * as lsp from './lsp'
@@ -37,7 +37,8 @@ class TreePkgs extends tree.Tree<SrcPkg | SrcFile> {
     override getTreeItem(item: SrcPkg | SrcFile): vsc.TreeItem | Thenable<vsc.TreeItem> {
         const src_pkg = item as SrcPkg, src_file = item as SrcFile
         const full_path = (src_pkg.DirPath ?? src_file.FilePath)
-        const label = (!full_path.startsWith(main.atmoPath) ? full_path : full_path.substring(main.atmoPath.length))
+        const label = src_file.FilePath ? node_path.basename(full_path)
+            : (!full_path.startsWith(main.atmoPath) ? full_path : full_path.substring(main.atmoPath.length))
         const ret = new tree.Item(label, (src_pkg.DirPath ? true : false), item)
         ret.description = full_path
         ret.tooltip = full_path

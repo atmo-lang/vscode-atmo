@@ -63,7 +63,7 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
                 this.doc = ed.document
                 this.refresh()
             }
-        }, 321)
+        }, 1234)
     }
 
     abstract getTreeItem(element: T): vsc.TreeItem | Thenable<vsc.TreeItem>;
