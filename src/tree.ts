@@ -73,8 +73,8 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
 
     abstract onItemClick(_: Item<T>): void;
     refresh(evt?: any) {
-        if (!this.doc)
-            vsc.window.showInformationMessage(this.cmdName)
+        // if (!this.doc)
+        //     vsc.window.showInformationMessage(this.cmdName)
         if (evt && false)
             console.log(evt)
         setTimeout(() => { this.eventEmitter.fire(undefined) }, 321)
