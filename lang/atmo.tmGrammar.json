@@ -13,12 +13,6 @@
 			"include": "#comments"
 		},
 		{
-			"include": "#keywords"
-		},
-		{
-			"include": "#opishs"
-		},
-		{
 			"include": "#brackets"
 		},
 		{
@@ -26,6 +20,21 @@
 		},
 		{
 			"include": "#numlits"
+		},
+		{
+			"include": "#symbols"
+		},
+		{
+			"include": "#macroparams"
+		},
+		{
+			"include": "#idents"
+		},
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#opishs"
 		}
 	],
 	"repository": {
@@ -62,15 +71,31 @@
 			"patterns": [
 				{
 					"name": "punctuation.atmo",
-					"match": "(\\b|\\s)(\\.|,|;|:)+(\\b|\\s)"
+					"match": "(\\.|,|;|:)"
 				}
 			]
 		},
-		"opishs": {
+		"symbols": {
 			"patterns": [
 				{
-					"name": "keyword.operator.atmo",
-					"match": "(\\b|\\s)(/|(:=|~|=|&|!|%|-|\\+|\\^|\\$|\\*|\\||\\?|\\<|\\>|\\\\)+)(\\b|\\s)"
+					"name": "constant.other.atmo",
+					"match": "(\\b|\\s|^)#[^\\s\\(\\[\\\"'{]+(\\b|\\s|$)"
+				}
+			]
+		},
+		"macroparams": {
+			"patterns": [
+				{
+					"name": "variable.parameter.atmo",
+					"match": "\\$[\\p{L}_]+[\\p{L}\\d_]*"
+				}
+			]
+		},
+		"idents": {
+			"patterns": [
+				{
+					"name": "variable.other.atmo",
+					"match": "[\\p{L}_]+[\\p{L}\\d_]*"
 				}
 			]
 		},
@@ -78,7 +103,15 @@
 			"patterns": [
 				{
 					"name": "keyword.control.atmo",
-					"match": "(\\b|\\s)….+(\\b|\\s)"
+					"match": "(@|%)[\\p{L}_]+[\\p{L}\\d_]*"
+				}
+			]
+		},
+		"opishs": {
+			"patterns": [
+				{
+					"name": "keyword.operator.atmo",
+					"match": "#|([\\p{S}\\p{Me}\\p{Pi}\\p{Pf}\\p{Pd}\\p{Pc}!¡§%&/?\\\\¿@*ˍ·…]+)"
 				}
 			]
 		},
@@ -90,7 +123,7 @@
 				},
 				{
 					"name": "constant.numeric.floating-point.atmo",
-					"match": "(\\.\\d+([Ee][\\-\\+]\\d+)?i?)\\b|\\b\\d+\\.\\d*(([Ee][\\-\\+]\\d+)?i?\\b)?"
+					"match": "(\\.\\d+([Ee][\\-\\+]\\d+)?i?)\\b|\\b\\d+\\.\\d+(([Ee][\\-\\+]\\d+)?i?\\b)?"
 				},
 				{
 					"name": "constant.numeric.integer.atmo",
