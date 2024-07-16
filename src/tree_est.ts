@@ -28,12 +28,14 @@ enum EstNodeKind {
     Ident = 1,
     Lit = 2,
     Call = 3,
+    Macro = 4,
 }
 
 const nodeKindIcons = new Map<EstNodeKind, string>([
-    [EstNodeKind.Call, "symbol-namespace"],
+    [EstNodeKind.Call, "symbol-method"],
     [EstNodeKind.Ident, "symbol-variable"],
     [EstNodeKind.Lit, "symbol-constant"],
+    [EstNodeKind.Macro, "symbol-color"],
 ])
 
 
