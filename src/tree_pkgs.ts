@@ -1,15 +1,20 @@
 import * as vsc from 'vscode'
-import * as lsp from 'vscode-languageclient/node'
+import * as vsc_lsp from 'vscode-languageclient/node'
+
 import * as main from './main'
+import * as lsp from './lsp'
 import * as tree from './tree'
 
+
 let treePkgs: TreePkgs
+
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
         vsc.window.registerTreeDataProvider('atmoVcPkgs', treePkgs = new TreePkgs(ctx, "pkgs", false, true)),
     ]
 }
+
 
 type SrcPkgs = SrcPkg[]
 type SrcPkg = {
@@ -22,6 +27,7 @@ type SrcFile = {
     parent: SrcPkg
     FilePath: string
 }
+
 
 class TreePkgs extends tree.Tree<SrcPkg | SrcFile> {
     cmdOnClick(it: tree.Item<SrcPkg | SrcFile>): vsc.Command {
@@ -43,14 +49,13 @@ class TreePkgs extends tree.Tree<SrcPkg | SrcFile> {
     override async getChildren(item?: SrcPkg | SrcFile | undefined): Promise<SrcPkgs | SrcFiles> {
         const src_pkg = item as SrcPkg, src_file = item as SrcFile
 
-        if ((!main.lspClient) || (src_file && src_file.FilePath))
+        if (src_file && src_file.FilePath)
             return []
 
         if (src_pkg && src_pkg.Files)
             return src_pkg.Files ?? []
 
-        const ret: SrcPkgs | undefined = await main.lspClient.sendRequest('workspace/executeCommand',
-            { command: 'getSrcPkgs', arguments: [] } as lsp.ExecuteCommandParams)
+        const ret: SrcPkgs | undefined = await lsp.executeCommand('getSrcPkgs')
         if (ret && Array.isArray(ret) && ret.length) {
             for (const src_pkg of ret)
                 for (const src_file of src_pkg.Files)

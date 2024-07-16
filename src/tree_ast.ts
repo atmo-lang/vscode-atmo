@@ -1,16 +1,20 @@
 import * as vsc from 'vscode'
-import * as lsp from 'vscode-languageclient/node'
-import * as main from './main'
+import * as vsc_lsp from 'vscode-languageclient/node'
+
+import * as lsp from './lsp'
 import * as tree from './tree'
 import * as tree_toks from './tree_toks'
 
+
 let treeAst: TreeAst
+
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
         vsc.window.registerTreeDataProvider('atmoVcAst', treeAst = new TreeAst(ctx, "ast", true, false)),
     ]
 }
+
 
 type AstNode = {
     parent: AstNode
@@ -37,6 +41,7 @@ const tokKindIcons = new Map<AstNodeKind, string>([
     [AstNodeKind.Comment, "comment"],
 ])
 
+
 class TreeAst extends tree.Tree<AstNode> {
     cmdOnClick(it: tree.Item<AstNode>): vsc.Command {
         return { command: this.cmdName, arguments: [it], title: "Reveal in text editor" }
@@ -54,14 +59,13 @@ class TreeAst extends tree.Tree<AstNode> {
     }
 
     override async getChildren(item?: AstNode | undefined): Promise<AstNodes> {
-        if ((!main.lspClient) || !this.doc)
+        if (!this.doc)
             return []
 
         if (item)
             return item.ChildNodes ?? []
 
-        const ret: AstNodes | undefined = await main.lspClient.sendRequest('workspace/executeCommand',
-            { command: 'getSrcFileAst', arguments: [this.doc.uri.fsPath] } as lsp.ExecuteCommandParams)
+        const ret: AstNodes | undefined = await lsp.executeCommand('getSrcFileAst', this.doc.uri.fsPath)
         if (ret && Array.isArray(ret) && ret.length) {
             walkNodes(ret, (node) => {
                 if (node.ChildNodes && node.ChildNodes.length)

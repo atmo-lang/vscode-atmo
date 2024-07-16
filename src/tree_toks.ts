@@ -1,15 +1,19 @@
 import * as vsc from 'vscode'
-import * as lsp from 'vscode-languageclient/node'
-import * as main from './main'
+import * as vsc_lsp from 'vscode-languageclient/node'
+
+import * as lsp from './lsp'
 import * as tree from './tree'
 
+
 let treeToks: TreeToks
+
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
         vsc.window.registerTreeDataProvider('atmoVcToks', treeToks = new TreeToks(ctx, "toks", true, false)),
     ]
 }
+
 
 export type Toks = Tok[]
 export type Tok = {
@@ -47,6 +51,7 @@ const tokKindIcons = new Map<TokKind, string>([
     [TokKind.LitFloat, "symbol-numeric"],
 ])
 
+
 class TreeToks extends tree.Tree<Tok> {
     cmdOnClick(it: tree.Item<Tok>): vsc.Command {
         return { command: this.cmdName, arguments: [it], title: "Reveal in text editor" }
@@ -63,13 +68,10 @@ class TreeToks extends tree.Tree<Tok> {
     }
 
     override async getChildren(item?: Tok | undefined): Promise<Toks> {
-        if (item || (!main.lspClient) || !this.doc)
+        if (item || !this.doc)
             return []
 
-        const ret: Toks | undefined = await main.lspClient.sendRequest('workspace/executeCommand',
-            { command: 'getSrcFileToks', arguments: [this.doc.uri.fsPath] } as lsp.ExecuteCommandParams)
-
-        return ret ?? []
+        return (await lsp.executeCommand('getSrcFileToks', this.doc.uri.fsPath)) ?? []
     }
 
     override getParent?(item: Tok): vsc.ProviderResult<Tok> {

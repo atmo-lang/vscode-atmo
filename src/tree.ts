@@ -1,5 +1,6 @@
 import * as vsc from 'vscode'
 
+
 export class Item<T> extends vsc.TreeItem {
     data: T
 
@@ -8,6 +9,7 @@ export class Item<T> extends vsc.TreeItem {
         this.data = data
     }
 }
+
 
 export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
     eventEmitter: vsc.EventEmitter<undefined> = new vsc.EventEmitter<undefined>()
@@ -73,10 +75,8 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
 
     abstract onItemClick(_: Item<T>): void;
     refresh(evt?: any) {
-        // if (!this.doc)
-        //     vsc.window.showInformationMessage(this.cmdName)
         if (evt && false)
             console.log(evt)
-        setTimeout(() => { this.eventEmitter.fire(undefined) }, 321)
+        this.eventEmitter.fire(undefined)
     }
 }
