@@ -53,7 +53,7 @@ const tokKindIcons = new Map<TokKind, string>([
 
 class TreeToks extends tree.Tree<Tok> {
     cmdOnClick(it: tree.Item<Tok>): vsc.Command {
-        return { command: this.cmdName, arguments: [it], title: "Reveal in text editor" }
+        return { command: this.cmdName, arguments: [it], title: "Open source file" }
     }
 
     override getTreeItem(item: Tok): vsc.TreeItem | Thenable<vsc.TreeItem> {

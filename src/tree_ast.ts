@@ -43,7 +43,7 @@ const nodeKindIcons = new Map<AstNodeKind, string>([
 
 class TreeAst extends tree.Tree<AstNode> {
     cmdOnClick(it: tree.Item<AstNode>): vsc.Command {
-        return { command: this.cmdName, arguments: [it], title: "Reveal in text editor" }
+        return { command: this.cmdName, arguments: [it], title: "Open source file" }
     }
 
     override getTreeItem(item: AstNode): vsc.TreeItem | Thenable<vsc.TreeItem> {
