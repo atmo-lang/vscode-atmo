@@ -31,7 +31,7 @@ type SrcFile = {
 
 class TreePkgs extends tree.Tree<SrcPkg | SrcFile> {
     cmdOnClick(it: tree.Item<SrcPkg | SrcFile>): vsc.Command {
-        return { command: this.cmdName, arguments: [it], title: "Reveal in text editor" }
+        return { command: this.cmdName, arguments: [it], title: "No-op for now" }
     }
 
     override getTreeItem(item: SrcPkg | SrcFile): vsc.TreeItem | Thenable<vsc.TreeItem> {

@@ -15,6 +15,7 @@ export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
 }
 
 
+type AstNodes = AstNode[]
 type AstNode = {
     parent: AstNode
     Kind: AstNodeKind
@@ -30,9 +31,8 @@ enum AstNodeKind {
     Lit = 3,
     Group = 4,
 }
-type AstNodes = AstNode[]
 
-const tokKindIcons = new Map<AstNodeKind, string>([
+const nodeKindIcons = new Map<AstNodeKind, string>([
     [AstNodeKind.Err, "symbol-event"],
     [AstNodeKind.Group, "symbol-namespace"],
     [AstNodeKind.Ident, "symbol-variable"],
@@ -50,7 +50,7 @@ class TreeAst extends tree.Tree<AstNode> {
         const range: vsc.Range | undefined = item.Toks ? rangeNode(item) : undefined
         const ret = new tree.Item(`L${(range?.start.line ?? -1) + 1} C${(range?.start.character ?? -1) + 1} - L${(range?.end.line ?? -1) + 1} C${(range?.end.character ?? -1) + 1} · ${AstNodeKind[item.Kind]}`,
             (item.ChildNodes && item.ChildNodes.length) ? true : false, item)
-        ret.iconPath = new vsc.ThemeIcon(tokKindIcons.get(item.Kind)!)
+        ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.Kind)!)
         ret.description = "" + item.Src
         ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
         ret.command = this.cmdOnClick(ret)
@@ -65,15 +65,13 @@ class TreeAst extends tree.Tree<AstNode> {
             return item.ChildNodes ?? []
 
         const ret: AstNodes | undefined = await lsp.executeCommand('getSrcFileAst', this.doc.uri.fsPath)
-        if (ret && Array.isArray(ret) && ret.length) {
+        if (ret && Array.isArray(ret) && ret.length)
             walkNodes(ret, (node) => {
                 if (node.ChildNodes && node.ChildNodes.length)
                     for (const sub_node of node.ChildNodes)
                         sub_node.parent = node
             })
-            return ret
-        }
-        return []
+        return ret ?? []
     }
 
     override getParent?(item: AstNode): vsc.ProviderResult<AstNode> {
