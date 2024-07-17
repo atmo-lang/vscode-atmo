@@ -1,31 +1,41 @@
 import * as vsc from 'vscode'
 
-import * as lsp from './lsp'
 import * as tree from './tree'
 import * as tree_pkgs from './tree_pkgs'
 import * as tree_toks from './tree_toks'
+import * as tree_ast from './tree_ast'
+import * as tree_est from './tree_est'
 
 
 let treeMulti: TreeMulti
+
+
+enum ProviderImpl {
+    None,
+    Pkgs,
+    Toks,
+    Ast,
+    Est,
+}
 
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
         vsc.window.registerTreeDataProvider('atmoViewInspectors', treeMulti = new TreeMulti(ctx)),
         vsc.commands.registerCommand('atmo.inspector.none', () => {
-            treeMulti.provider = 0
+            treeMulti.provider = ProviderImpl.None
         }),
         vsc.commands.registerCommand('atmo.inspector.pkgs', () => {
-            treeMulti.provider = 1
+            treeMulti.provider = ProviderImpl.Pkgs
         }),
         vsc.commands.registerCommand('atmo.inspector.toks', () => {
-            treeMulti.provider = 2
+            treeMulti.provider = ProviderImpl.Toks
         }),
         vsc.commands.registerCommand('atmo.inspector.ast', () => {
-            treeMulti.provider = 0
+            treeMulti.provider = ProviderImpl.Ast
         }),
         vsc.commands.registerCommand('atmo.inspector.est', () => {
-            treeMulti.provider = 0
+            treeMulti.provider = ProviderImpl.Est
         }),
     ]
 }
@@ -56,7 +66,7 @@ class EmptyProvider implements Provider {
 
 export class TreeMulti extends tree.Tree<any> {
     private providers: Provider[]
-    currentProviderIdx: number = 0
+    private currentProvider: ProviderImpl = 0
 
     constructor(ctx: vsc.ExtensionContext) {
         super(ctx, "multi", tree.RefreshKind.OnDocEvents, tree.RefreshKind.OnFsEvents)
@@ -64,23 +74,29 @@ export class TreeMulti extends tree.Tree<any> {
             new EmptyProvider(),
             new tree_pkgs.Provider(),
             new tree_toks.Provider(),
+            new tree_ast.Provider(),
+            new tree_est.Provider(),
         ]
     }
 
     public get provider(): Provider {
-        return this.providers[this.currentProviderIdx]
+        return this.providers[this.currentProvider]
     }
-    set provider(value: number) {
-        this.currentProviderIdx = value
+    set provider(value: ProviderImpl) {
+        this.currentProvider = value
         this.refresh(tree.RefreshKind.Other)
     }
 
     override refresh(kind: tree.RefreshKind, evt?: any): void {
-        // if (kind !== tree.RefreshKind.Other)
-        //     switch (true) {
-        //         case (this.currentProviderIdx == 0) && (kind !== tree.RefreshKind.OnDocEvents):
-        //             return
-        //     }
+        if (kind !== tree.RefreshKind.Other)
+            switch (true) {
+                case ([ProviderImpl.None].includes(this.currentProvider)):
+                    return
+                case ([ProviderImpl.Ast, ProviderImpl.Toks].includes(this.currentProvider)) && (kind !== tree.RefreshKind.OnDocEvents):
+                    return
+                case ([ProviderImpl.Pkgs].includes(this.currentProvider) && (kind !== tree.RefreshKind.OnFsEvents)):
+                    return
+            }
         super.refresh(kind, evt)
     }
 

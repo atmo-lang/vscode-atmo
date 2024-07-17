@@ -56,10 +56,21 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
 
         if (refreshKinds.includes(RefreshKind.OnFsEvents))
             ctx.subscriptions.push(
-                vsc.workspace.onDidChangeWorkspaceFolders((evt) => { this.refresh(RefreshKind.OnFsEvents, evt) }),
-                vsc.workspace.onDidDeleteFiles((evt) => { this.refresh(RefreshKind.OnFsEvents, evt) }),
-                vsc.workspace.onDidRenameFiles((evt) => { this.refresh(RefreshKind.OnFsEvents, evt) }),
-                vsc.workspace.onDidCreateFiles((evt) => { this.refresh(RefreshKind.OnFsEvents, evt) }),
+                vsc.workspace.onDidChangeWorkspaceFolders((evt) => {
+                    this.refresh(RefreshKind.OnFsEvents, evt)
+                }),
+                vsc.workspace.onDidDeleteFiles((evt) => {
+                    if (evt.files.some(_ => _.fsPath.endsWith('.at')))
+                        this.refresh(RefreshKind.OnFsEvents, evt)
+                }),
+                vsc.workspace.onDidRenameFiles((evt) => {
+                    if (evt.files.some(_ => (_.oldUri.fsPath.endsWith('.at') || _.newUri.fsPath.endsWith('.at'))))
+                        this.refresh(RefreshKind.OnFsEvents, evt)
+                }),
+                vsc.workspace.onDidCreateFiles((evt) => {
+                    if (evt.files.some(_ => _.fsPath.endsWith('.at')))
+                        this.refresh(RefreshKind.OnFsEvents, evt)
+                }),
             )
 
         setTimeout(() => {

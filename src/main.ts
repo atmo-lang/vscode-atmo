@@ -40,10 +40,6 @@ export function activate(ctx: vsc.ExtensionContext) {
 		)
 
 		regDisp(...tree_multi.init(ctx))
-		regDisp(...tree_pkgs.init(ctx))
-		regDisp(...tree_toks.init(ctx))
-		regDisp(...tree_ast.init(ctx))
-		regDisp(...tree_est.init(ctx))
 	}
 }
 

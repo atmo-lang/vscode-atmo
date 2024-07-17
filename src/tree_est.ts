@@ -2,16 +2,7 @@ import * as vsc from 'vscode'
 
 import * as lsp from './lsp'
 import * as tree from './tree'
-
-
-let treeEst: TreeEst
-
-
-export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
-    return [
-        vsc.window.registerTreeDataProvider('atmoVcEst', treeEst = new TreeEst(ctx, "est", tree.RefreshKind.OnDocEvents, tree.RefreshKind.OnFsEvents)),
-    ]
-}
+import * as tree_multi from './tree_multi'
 
 
 export type EstNodes = EstNode[]
@@ -44,12 +35,8 @@ const nodeKindIcons = new Map<EstNodeKind, string>([
 ])
 
 
-class TreeEst extends tree.Tree<EstNode> {
-    cmdOnClick(it: tree.Item<EstNode>): vsc.Command {
-        return { command: this.cmdName, arguments: [it], title: "Open source file" }
-    }
-
-    override getTreeItem(item: EstNode): vsc.TreeItem | Thenable<vsc.TreeItem> {
+export class Provider implements tree_multi.Provider {
+    getItem(treeView: tree_multi.TreeMulti, item: EstNode): vsc.TreeItem {
         const ret = new tree.Item(`${(item.Kind === EstNodeKind.None) ? item.label : EstNodeKind[item.Kind]}`,
             (item.Self || (item.selfAsNodes && item.selfAsNodes.length)) ? true : false, item)
         ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.Kind)!)
@@ -58,12 +45,16 @@ class TreeEst extends tree.Tree<EstNode> {
             if (item.Self)
                 ret.tooltip.appendMarkdown("\n___\n").appendCodeblock(JSON.stringify(item.Self, null, 2), 'json')
         }
-        ret.command = this.cmdOnClick(ret)
+        ret.command = treeView.cmdOnClick(ret)
         return ret
     }
 
-    override async getChildren(item?: EstNode): Promise<EstNodes> {
-        if (!this.doc)
+    getParentItem(item: EstNode): EstNode | undefined {
+        return item.parent
+    }
+
+    async getSubItems(treeView: tree_multi.TreeMulti, item?: EstNode): Promise<EstNodes> {
+        if (!treeView.doc)
             return []
 
         if (item) {
@@ -74,26 +65,21 @@ class TreeEst extends tree.Tree<EstNode> {
             return item.selfAsNodes ?? []
         }
 
-        const ret: EstNodes | undefined = await lsp.executeCommand('getSrcPkgEst', this.doc.uri.fsPath)
+        const ret: EstNodes | undefined = await lsp.executeCommand('getSrcPkgEst', treeView.doc.uri.fsPath)
         if (ret && Array.isArray(ret) && ret.length)
             setParents(ret)
         return ret ?? []
     }
 
-    override getParent?(item: EstNode): vsc.ProviderResult<EstNode> {
-        return item.parent
-    }
-
-    override onItemClick(it: tree.Item<EstNode>): void {
-        if (it.data && it.data.ClientInfo && it.data.ClientInfo.SrcFilePath && it.data.ClientInfo.SrcFilePath.length) {
-            const range: vsc.Range | undefined = it.data.ClientInfo.SrcFileSpan ? lsp.toVscRange(it.data.ClientInfo.SrcFileSpan) : undefined
-            vsc.workspace.openTextDocument(it.data.ClientInfo.SrcFilePath).then(
+    onClick(item: EstNode): void {
+        if (item.ClientInfo && item.ClientInfo.SrcFilePath && item.ClientInfo.SrcFilePath.length) {
+            const range: vsc.Range | undefined = item.ClientInfo.SrcFileSpan ? lsp.toVscRange(item.ClientInfo.SrcFileSpan) : undefined
+            vsc.workspace.openTextDocument(item.ClientInfo.SrcFilePath).then(
                 (it) => { vsc.window.showTextDocument(it, { selection: range }) },
                 vsc.window.showWarningMessage,
             )
         }
     }
-
 }
 
 
