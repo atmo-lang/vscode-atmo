@@ -130,8 +130,5 @@ async function cmdReplFromExpr(...args: any[]) {
 function cmdUtilMultiCommand(..._: any[]) {
 	const cfg = vsc.workspace.getConfiguration()
 	const commands = cfg.get<string[]>('atmo.util.multicommand.commands', [])
-
-	if (commands)
-		for (const command of commands)
-			vsc.commands.executeCommand(command)
+	commands.forEach(vsc.commands.executeCommand)
 }
