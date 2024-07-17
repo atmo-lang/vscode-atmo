@@ -19,7 +19,7 @@ type AstNodes = AstNode[]
 type AstNode = {
     parent: AstNode
     Kind: AstNodeKind
-    ChildNodes: AstNodes
+    Nodes: AstNodes
     Toks: tree_toks.Toks
     Src: string
     Lit: number | string | null
@@ -49,7 +49,7 @@ class TreeAst extends tree.Tree<AstNode> {
     override getTreeItem(item: AstNode): vsc.TreeItem | Thenable<vsc.TreeItem> {
         const range: vsc.Range | undefined = item.Toks ? rangeNode(item) : undefined
         const ret = new tree.Item(`L${(range?.start.line ?? -1) + 1} C${(range?.start.character ?? -1) + 1} - L${(range?.end.line ?? -1) + 1} C${(range?.end.character ?? -1) + 1} · ${AstNodeKind[item.Kind]}`,
-            (item.ChildNodes && item.ChildNodes.length) ? true : false, item)
+            (item.Nodes && item.Nodes.length) ? true : false, item)
         ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.Kind)!)
         ret.description = "" + item.Src
         ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
@@ -62,13 +62,13 @@ class TreeAst extends tree.Tree<AstNode> {
             return []
 
         if (item)
-            return item.ChildNodes ?? []
+            return item.Nodes ?? []
 
         const ret: AstNodes | undefined = await lsp.executeCommand('getSrcFileAst', this.doc.uri.fsPath)
         if (ret && Array.isArray(ret) && ret.length)
             walkNodes(ret, (node) => {
-                if (node.ChildNodes && node.ChildNodes.length)
-                    for (const sub_node of node.ChildNodes)
+                if (node.Nodes && node.Nodes.length)
+                    for (const sub_node of node.Nodes)
                         sub_node.parent = node
             })
         return ret ?? []
@@ -95,7 +95,7 @@ function rangeNode(node: AstNode): vsc.Range {
 function walkNodes(nodes: AstNodes, onNode: (_: AstNode) => void) {
     for (const node of nodes) {
         onNode(node)
-        if (node.ChildNodes)
-            walkNodes(node.ChildNodes, onNode)
+        if (node.Nodes)
+            walkNodes(node.Nodes, onNode)
     }
 }
