@@ -9,7 +9,7 @@ let treeToks: TreeToks
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
-        vsc.window.registerTreeDataProvider('atmoVcToks', treeToks = new TreeToks(ctx, "toks", true, false)),
+        vsc.window.registerTreeDataProvider('atmoVcToks', treeToks = new TreeToks(ctx, "toks", tree.RefreshKind.OnDocEvents)),
     ]
 }
 
@@ -24,7 +24,7 @@ export type Tok = {
     Src: string
     parent: Toks
 }
-enum TokKind {
+export enum TokKind {
     Begin = 1,
     End = 2,
     Comment = 3,

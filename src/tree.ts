@@ -11,29 +11,36 @@ export class Item<T> extends vsc.TreeItem {
 }
 
 
+export enum RefreshKind {
+    Other,
+    OnDocEvents,
+    OnFsEvents,
+}
+
+
 export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
     eventEmitter: vsc.EventEmitter<undefined> = new vsc.EventEmitter<undefined>()
     onDidChangeTreeData: vsc.Event<undefined> = this.eventEmitter.event
     cmdName: string
     doc: vsc.TextDocument | undefined
 
-    constructor(ctx: vsc.ExtensionContext, moniker: string, refreshOnDocEvents: boolean, refreshOnFsEvents: boolean) {
+    constructor(ctx: vsc.ExtensionContext, moniker: string, ...refreshKinds: RefreshKind[]) {
         this.cmdName = "atmo.tree.onClick_" + moniker
         ctx.subscriptions.push(vsc.commands.registerCommand(this.cmdName, this.onItemClick.bind(this)))
 
-        if (refreshOnDocEvents)
+        if (refreshKinds.includes(RefreshKind.OnDocEvents))
             ctx.subscriptions.push(
                 vsc.window.onDidChangeActiveTextEditor((evt) => {
                     this.doc = undefined
                     if (evt && (evt.document.languageId == "atmo"))
                         this.doc = evt.document
-                    this.refresh()
+                    this.refresh(RefreshKind.OnDocEvents, evt)
                 }),
 
                 vsc.workspace.onDidCloseTextDocument((it) => {
                     if (this.doc && it && this.doc.fileName === it.fileName) {
                         this.doc = undefined
-                        this.refresh()
+                        this.refresh(RefreshKind.OnDocEvents, it)
                     }
                 }),
 
@@ -42,26 +49,26 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
                     if ((evt.document.languageId == "atmo") && evt.contentChanges && evt.contentChanges.length &&
                         (this.doc ? (this.doc.fileName === evt.document.fileName) : (ed && (evt.document.fileName === ed.document.fileName)))) {
                         this.doc = evt.document
-                        this.refresh()
+                        this.refresh(RefreshKind.OnDocEvents, evt)
                     }
                 }),
             )
 
-        if (refreshOnFsEvents)
+        if (refreshKinds.includes(RefreshKind.OnFsEvents))
             ctx.subscriptions.push(
-                vsc.workspace.onDidChangeWorkspaceFolders((evt) => { this.refresh(evt) }),
-                vsc.workspace.onDidDeleteFiles((evt) => { this.refresh(evt) }),
-                vsc.workspace.onDidRenameFiles((evt) => { this.refresh(evt) }),
-                vsc.workspace.onDidCreateFiles((evt) => { this.refresh(evt) }),
+                vsc.workspace.onDidChangeWorkspaceFolders((evt) => { this.refresh(RefreshKind.OnFsEvents, evt) }),
+                vsc.workspace.onDidDeleteFiles((evt) => { this.refresh(RefreshKind.OnFsEvents, evt) }),
+                vsc.workspace.onDidRenameFiles((evt) => { this.refresh(RefreshKind.OnFsEvents, evt) }),
+                vsc.workspace.onDidCreateFiles((evt) => { this.refresh(RefreshKind.OnFsEvents, evt) }),
             )
 
         setTimeout(() => {
             const ed = vsc.window.activeTextEditor
-            if (!refreshOnDocEvents)
-                this.refresh()
+            if (!refreshKinds.includes(RefreshKind.OnDocEvents))
+                this.refresh(RefreshKind.Other)
             else if (ed && (ed.document.languageId == "atmo")) {
                 this.doc = ed.document
-                this.refresh()
+                this.refresh(RefreshKind.Other)
             }
         }, 1234)
     }
@@ -74,7 +81,7 @@ export abstract class Tree<T> implements vsc.TreeDataProvider<T> {
     }
 
     abstract onItemClick(_: Item<T>): void;
-    refresh(evt?: any) {
+    refresh(kind: RefreshKind, evt?: any) {
         if (evt && false)
             console.log(evt)
         this.eventEmitter.fire(undefined)

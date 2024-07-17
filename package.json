@@ -101,6 +101,7 @@
     },
     "views": {
       "atmoVc": [
+        { "id": "atmoViewInspectors", "name": "Atmo Inspector", "icon": "$(list-tree)" },
         { "id": "atmoVcPkgs", "name": "In-Session Packages", "icon": "$(package)" },
         { "id": "atmoVcToks", "name": "Tokenization: Lexemes", "icon": "$(list-flat)" },
         { "id": "atmoVcAst", "name": "Parsing: AST", "icon": "$(list-tree)" },

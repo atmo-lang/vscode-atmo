@@ -11,19 +11,19 @@ let treePkgs: TreePkgs
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
-        vsc.window.registerTreeDataProvider('atmoVcPkgs', treePkgs = new TreePkgs(ctx, "pkgs", false, true)),
+        vsc.window.registerTreeDataProvider('atmoVcPkgs', treePkgs = new TreePkgs(ctx, "pkgs", tree.RefreshKind.OnFsEvents)),
     ]
 }
 
 
-type SrcPkgs = SrcPkg[]
-type SrcPkg = {
+export type SrcPkgs = SrcPkg[]
+export type SrcPkg = {
     DirPath: string
     Files: SrcFiles
 }
 
-type SrcFiles = SrcFile[]
-type SrcFile = {
+export type SrcFiles = SrcFile[]
+export type SrcFile = {
     parent: SrcPkg
     FilePath: string
 }

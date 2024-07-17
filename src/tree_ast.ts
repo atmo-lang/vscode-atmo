@@ -10,13 +10,13 @@ let treeAst: TreeAst
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
-        vsc.window.registerTreeDataProvider('atmoVcAst', treeAst = new TreeAst(ctx, "ast", true, false)),
+        vsc.window.registerTreeDataProvider('atmoVcAst', treeAst = new TreeAst(ctx, "ast", tree.RefreshKind.OnDocEvents)),
     ]
 }
 
 
-type AstNodes = AstNode[]
-type AstNode = {
+export type AstNodes = AstNode[]
+export type AstNode = {
     parent: AstNode
     Kind: AstNodeKind
     Nodes: AstNodes
@@ -24,7 +24,7 @@ type AstNode = {
     Src: string
     Lit: number | string | null
 }
-enum AstNodeKind {
+export enum AstNodeKind {
     Err = 0,
     Comment = 1,
     Ident = 2,

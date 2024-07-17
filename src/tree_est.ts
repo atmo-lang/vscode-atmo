@@ -9,13 +9,13 @@ let treeEst: TreeEst
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
-        vsc.window.registerTreeDataProvider('atmoVcEst', treeEst = new TreeEst(ctx, "est", true, true)),
+        vsc.window.registerTreeDataProvider('atmoVcEst', treeEst = new TreeEst(ctx, "est", tree.RefreshKind.OnDocEvents, tree.RefreshKind.OnFsEvents)),
     ]
 }
 
 
-type EstNodes = EstNode[]
-type EstNode = {
+export type EstNodes = EstNode[]
+export type EstNode = {
     parent?: EstNode
     Kind: EstNodeKind
     ClientInfo?: {
@@ -27,7 +27,7 @@ type EstNode = {
     selfAsNodes: EstNodes
     label?: string
 }
-enum EstNodeKind {
+export enum EstNodeKind {
     None = 0,
     Ident = 1,
     Lit = 2,
