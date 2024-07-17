@@ -52,7 +52,7 @@ class TreeAst extends tree.Tree<AstNode> {
             (item.Nodes && item.Nodes.length) ? true : false, item)
         ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.Kind)!)
         ret.description = "" + item.Src
-        ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
+        ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n", true)
         ret.command = this.cmdOnClick(ret)
         return ret
     }

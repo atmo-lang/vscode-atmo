@@ -61,7 +61,7 @@ class TreeToks extends tree.Tree<Tok> {
         const ret = new tree.Item(`L${range.start.line + 1} C${range.start.character + 1} - L${range.end.line + 1} C${range.end.character + 1} · ${TokKind[item.Kind]}`, false, item)
         ret.iconPath = new vsc.ThemeIcon((item.Src.charCodeAt(0) == 16) ? "arrow-right" : ((item.Src.charCodeAt(0) == 17) ? "arrow-left" : tokKindIcons.get(item.Kind)!))
         ret.description = (item.Src.charCodeAt(0) == 16) ? "<indent>" : ((item.Src.charCodeAt(0) == 17) ? "<outdent>" : item.Src)
-        ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n")
+        ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n", true)
         ret.command = this.cmdOnClick(ret)
         return ret
     }
