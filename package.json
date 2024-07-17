@@ -96,7 +96,7 @@
     },
     "views": {
       "atmoVc": [
-        { "id": "atmoViewInspectors", "name": "Atmo Inspector", "icon": "$(list-tree)" }
+        { "id": "atmoViewInspectors", "name": "Inspector", "icon": "$(list-tree)" }
       ]
     },
     "menus": {

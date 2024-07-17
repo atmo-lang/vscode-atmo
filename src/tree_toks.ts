@@ -62,7 +62,7 @@ export class Provider implements tree_multi.Provider {
         return (await lsp.executeCommand('getSrcFileToks', treeView.doc.uri.fsPath)) ?? []
     }
 
-    onClick(item: Tok): void {
+    onClick(treeView: tree_multi.TreeMulti, item: Tok): void {
         if (vsc.window.activeTextEditor) {
             const range = rangeTok(item)
             vsc.window.activeTextEditor.selections = [new vsc.Selection(range.start, range.end)]

@@ -71,7 +71,7 @@ export class Provider implements tree_multi.Provider {
         return ret ?? []
     }
 
-    onClick(item: EstNode): void {
+    onClick(treeView: tree_multi.TreeMulti, item: EstNode): void {
         if (item.ClientInfo && item.ClientInfo.SrcFilePath && item.ClientInfo.SrcFilePath.length) {
             const range: vsc.Range | undefined = item.ClientInfo.SrcFileSpan ? lsp.toVscRange(item.ClientInfo.SrcFileSpan) : undefined
             vsc.workspace.openTextDocument(item.ClientInfo.SrcFilePath).then(

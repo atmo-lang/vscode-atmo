@@ -58,7 +58,7 @@ export class Provider implements tree_multi.Provider {
         return []
     }
 
-    onClick(item: SrcPkg | SrcFile): void {
+    onClick(treeView: tree_multi.TreeMulti, item: SrcPkg | SrcFile): void {
         const src_pkg = item as SrcPkg, src_file = item as SrcFile
 
         if (src_file && src_file.FilePath)

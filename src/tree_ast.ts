@@ -65,7 +65,7 @@ export class Provider implements tree_multi.Provider {
         return ret ?? []
     }
 
-    onClick(item: AstNode): void {
+    onClick(treeView: tree_multi.TreeMulti, item: AstNode): void {
         if (item.Toks && vsc.window.activeTextEditor) {
             const range = rangeNode(item)
             vsc.window.activeTextEditor.selections = [new vsc.Selection(range.start, range.end)]

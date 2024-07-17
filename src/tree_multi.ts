@@ -11,11 +11,13 @@ let treeMulti: TreeMulti
 
 
 enum ProviderImpl {
-    None,
-    Pkgs,
-    Toks,
-    Ast,
-    Est,
+    None = 0,
+    Pkgs = 1,
+    Toks = 2,
+    Ast = 3,
+    Est = 4,
+
+    notZeroForJSBugginess,
 }
 
 
@@ -45,28 +47,41 @@ export interface Provider {
     getItem(treeView: TreeMulti, item: any): vsc.TreeItem
     getParentItem(item: any): any
     getSubItems(treeView: TreeMulti, item?: any): Promise<any[]>
-    onClick(item: any): void
+    onClick(treeView: TreeMulti, item: any): void
 }
 
 
 class EmptyProvider implements Provider {
-    getItem(treeView: TreeMulti, item: any): vsc.TreeItem {
-        return new vsc.TreeItem("never")
+    getItem(treeView: TreeMulti, item: ProviderImpl): vsc.TreeItem {
+        const ret = new tree.Item<ProviderImpl>(
+            ((item === ProviderImpl.Pkgs) ? "·\tin-session packages"
+                : (item === ProviderImpl.Toks) ? "·\tlexing"
+                    : (item === ProviderImpl.Ast) ? "·\tparsing (AST)"
+                        : (item === ProviderImpl.Est) ? "·\texpansion (EST)"
+                            : "No inspector currently selected. Pick one:"),
+            false, item)
+        ret.command = treeView.cmdOnClick(ret)
+        return ret
     }
-    getParentItem(item: any) {
+    getParentItem(_: ProviderImpl): ProviderImpl | undefined {
         return undefined
     }
-    getSubItems(treeView: TreeMulti, item?: any): Promise<any[]> {
-        return Promise.resolve([])
+    async getSubItems(_: TreeMulti, item?: ProviderImpl): Promise<ProviderImpl[]> {
+        return item ? []
+            : [ProviderImpl.notZeroForJSBugginess, ProviderImpl.Pkgs, ProviderImpl.Toks, ProviderImpl.Ast, ProviderImpl.Est]
     }
-    onClick(item: any): void {
+    onClick(treeView: TreeMulti, item: ProviderImpl): void {
+        if ((item > ProviderImpl.None) && (item < ProviderImpl.notZeroForJSBugginess))
+            treeView.provider = item
+        // else
+        //     vsc.window.showInformationMessage("To avoid unnecessary LSP traffic, the Atmo Inspector view defaults to None. You can pick an inspector to show from the Atmo Inspector view's header tool-bar.")
     }
 }
 
 
 export class TreeMulti extends tree.Tree<any> {
     private providers: Provider[]
-    private currentProvider: ProviderImpl = 0
+    private currentProvider: ProviderImpl = ProviderImpl.None
 
     constructor(ctx: vsc.ExtensionContext) {
         super(ctx, "multi", tree.RefreshKind.OnDocEvents, tree.RefreshKind.OnFsEvents)
@@ -115,7 +130,7 @@ export class TreeMulti extends tree.Tree<any> {
     }
     override onItemClick(it: tree.Item<any>): void {
         if (it.data)
-            this.provider.onClick(it.data)
+            this.provider.onClick(this, it.data)
     }
 
 }
