@@ -2,6 +2,7 @@ import * as vsc from 'vscode'
 
 import * as lsp from './lsp'
 import * as repl from './repl'
+import * as tree_multi from './tree_multi'
 import * as tree_pkgs from './tree_pkgs'
 import * as tree_toks from './tree_toks'
 import * as tree_ast from './tree_ast'
@@ -38,6 +39,7 @@ export function activate(ctx: vsc.ExtensionContext) {
 			vsc.workspace.onDidDeleteFiles(lsp.maybeSendFsRefreshPoke),
 		)
 
+		regDisp(...tree_multi.init(ctx))
 		regDisp(...tree_pkgs.init(ctx))
 		regDisp(...tree_toks.init(ctx))
 		regDisp(...tree_ast.init(ctx))

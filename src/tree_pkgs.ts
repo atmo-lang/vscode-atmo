@@ -47,7 +47,7 @@ class TreePkgs extends tree.Tree<SrcPkg | SrcFile> {
         return ret
     }
 
-    override async getChildren(item?: SrcPkg | SrcFile | undefined): Promise<SrcPkgs | SrcFiles> {
+    override async getChildren(item?: SrcPkg | SrcFile): Promise<SrcPkgs | SrcFiles> {
         const src_pkg = item as SrcPkg, src_file = item as SrcFile
 
         if (src_file && src_file.FilePath)

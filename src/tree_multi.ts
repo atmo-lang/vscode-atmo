@@ -2,6 +2,7 @@ import * as vsc from 'vscode'
 
 import * as lsp from './lsp'
 import * as tree from './tree'
+import * as tree_ast from './tree_ast'
 import * as tree_toks from './tree_toks'
 
 
@@ -10,92 +11,50 @@ let treeMulti: TreeMulti
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
-        vsc.window.registerTreeDataProvider('atmoViewInspectors', treeMulti = new TreeMulti(ctx, "multi", tree.RefreshKind.OnDocEvents, tree.RefreshKind.OnFsEvents)),
+        vsc.window.registerTreeDataProvider('atmoViewInspectors', treeMulti = new TreeMulti(ctx)),
     ]
 }
 
 
-type AstNodes = AstNode[]
-type AstNode = {
-    parent: AstNode
-    Kind: AstNodeKind
-    Nodes: AstNodes
-    Toks: tree_toks.Toks
-    Src: string
-    Lit: number | string | null
-}
-enum AstNodeKind {
-    Err = 0,
-    Comment = 1,
-    Ident = 2,
-    Lit = 3,
-    Group = 4,
+export interface Provider {
+    getItem(treeView: TreeMulti, item: any): vsc.TreeItem
+    getParentItem(item: any): any
+    getSubItems(treeView: TreeMulti, item?: any): Promise<any[]>
+    onClick(item: any): void
 }
 
-const nodeKindIcons = new Map<AstNodeKind, string>([
-    [AstNodeKind.Err, "symbol-event"],
-    [AstNodeKind.Group, "symbol-namespace"],
-    [AstNodeKind.Ident, "symbol-variable"],
-    [AstNodeKind.Lit, "symbol-constant"],
-    [AstNodeKind.Comment, "comment"],
-])
 
+export class TreeMulti extends tree.Tree<any> {
+    private providers: Provider[]
+    currentProviderIdx: number = 0
 
-class TreeMulti extends tree.Tree<AstNode> {
-    cmdOnClick(it: tree.Item<AstNode>): vsc.Command {
-        return { command: this.cmdName, arguments: [it], title: "Open source file" }
+    constructor(ctx: vsc.ExtensionContext) {
+        super(ctx, "multi", tree.RefreshKind.OnDocEvents, tree.RefreshKind.OnFsEvents)
+        this.providers = [
+            new tree_toks.Provider(),
+        ]
     }
 
-    override getTreeItem(item: AstNode): vsc.TreeItem | Thenable<vsc.TreeItem> {
-        const range: vsc.Range | undefined = item.Toks ? rangeNode(item) : undefined
-        const ret = new tree.Item(`L${(range?.start.line ?? -1) + 1} C${(range?.start.character ?? -1) + 1} - L${(range?.end.line ?? -1) + 1} C${(range?.end.character ?? -1) + 1} · ${AstNodeKind[item.Kind]}`,
-            (item.Nodes && item.Nodes.length) ? true : false, item)
-        ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.Kind)!)
-        ret.description = "" + item.Src
-        ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n", true)
-        ret.command = this.cmdOnClick(ret)
-        return ret
+    public get provider(): Provider {
+        return this.providers[this.currentProviderIdx];
     }
 
-    override async getChildren(item?: AstNode | undefined): Promise<AstNodes> {
-        if (!this.doc)
-            return []
-
-        if (item)
-            return item.Nodes ?? []
-
-        const ret: AstNodes | undefined = await lsp.executeCommand('getSrcFileAst', this.doc.uri.fsPath)
-        if (ret && Array.isArray(ret) && ret.length)
-            walkNodes(ret, (node) => {
-                if (node.Nodes && node.Nodes.length)
-                    for (const sub_node of node.Nodes)
-                        sub_node.parent = node
-            })
-        return ret ?? []
+    cmdOnClick(it: tree.Item<any>): vsc.Command {
+        return { command: this.cmdName, arguments: [it], title: "Open" }
     }
 
-    override getParent?(item: AstNode): vsc.ProviderResult<AstNode> {
-        return item.parent
+    override getTreeItem(item: any): vsc.TreeItem | Thenable<vsc.TreeItem> {
+        return this.provider.getItem(this, item)
+    }
+    override async getChildren(item?: any): Promise<any[]> {
+        return this.provider.getSubItems(this, item)
+    }
+    override getParent?(item: any): vsc.ProviderResult<any> {
+        return this.provider.getParentItem(item)
+    }
+    override onItemClick(it: tree.Item<any>): void {
+        if (it.data)
+            this.provider.onClick(it.data)
     }
 
-    override onItemClick(it: tree.Item<AstNode>): void {
-        if (it.data.Toks && vsc.window.activeTextEditor) {
-            const range = rangeNode(it.data)
-            vsc.window.activeTextEditor.selections = [new vsc.Selection(range.start, range.end)]
-            vsc.window.showTextDocument(vsc.window.activeTextEditor.document)
-        }
-    }
-
-}
-
-function rangeNode(node: AstNode): vsc.Range {
-    return tree_toks.rangeToks(node.Toks)
-}
-
-function walkNodes(nodes: AstNodes, onNode: (_: AstNode) => void) {
-    for (const node of nodes) {
-        onNode(node)
-        if (node.Nodes)
-            walkNodes(node.Nodes, onNode)
-    }
 }

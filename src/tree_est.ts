@@ -62,7 +62,7 @@ class TreeEst extends tree.Tree<EstNode> {
         return ret
     }
 
-    override async getChildren(item?: EstNode | undefined): Promise<EstNodes> {
+    override async getChildren(item?: EstNode): Promise<EstNodes> {
         if (!this.doc)
             return []
 

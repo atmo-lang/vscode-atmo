@@ -3,6 +3,7 @@ import * as vsc from 'vscode'
 import * as lsp from './lsp'
 import * as tree from './tree'
 import * as tree_toks from './tree_toks'
+import * as tree_multi from './tree_multi'
 
 
 let treeAst: TreeAst
@@ -57,7 +58,7 @@ class TreeAst extends tree.Tree<AstNode> {
         return ret
     }
 
-    override async getChildren(item?: AstNode | undefined): Promise<AstNodes> {
+    override async getChildren(item?: AstNode): Promise<AstNodes> {
         if (!this.doc)
             return []
 
