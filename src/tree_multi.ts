@@ -19,6 +19,14 @@ enum ProviderImpl {
 
     notZeroForJSBugginess,
 }
+const implIcons = new Map<ProviderImpl, string>([
+    [ProviderImpl.None, "info"],
+    [ProviderImpl.notZeroForJSBugginess, "info"],
+    [ProviderImpl.Pkgs, "package"],
+    [ProviderImpl.Toks, "list-flat"],
+    [ProviderImpl.Ast, "list-tree"],
+    [ProviderImpl.Est, "symbol-misc"],
+])
 
 
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
@@ -60,6 +68,7 @@ class EmptyProvider implements Provider {
                         : (item === ProviderImpl.Est) ? "·\texpansion (EST)"
                             : "No inspector currently selected. Pick one:"),
             false, item)
+        ret.iconPath = new vsc.ThemeIcon(implIcons.get(item)!)
         ret.command = treeView.cmdOnClick(ret)
         return ret
     }
@@ -73,8 +82,6 @@ class EmptyProvider implements Provider {
     onClick(treeView: TreeMulti, item: ProviderImpl): void {
         if ((item > ProviderImpl.None) && (item < ProviderImpl.notZeroForJSBugginess))
             treeView.provider = item
-        // else
-        //     vsc.window.showInformationMessage("To avoid unnecessary LSP traffic, the Atmo Inspector view defaults to None. You can pick an inspector to show from the Atmo Inspector view's header tool-bar.")
     }
 }
 
