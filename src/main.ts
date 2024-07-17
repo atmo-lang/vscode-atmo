@@ -27,6 +27,7 @@ export function activate(ctx: vsc.ExtensionContext) {
 
 			vsc.commands.registerCommand('atmo.cmd.eval.quick', cmdEvalQuick),
 			vsc.commands.registerCommand('atmo.cmd.eval.repl', cmdReplFromExpr),
+			vsc.commands.registerCommand('atmo.util.multicommand', cmdUtilMultiCommand),
 			vsc.languages.registerCodeActionsProvider({ scheme: 'file', language: 'atmo' }, {
 				provideCodeActions: codeActions,
 			}),
@@ -123,4 +124,14 @@ async function cmdReplFromExpr(...args: any[]) {
 			value: src_file.getText(range),
 		}],
 	}))
+}
+
+
+function cmdUtilMultiCommand(..._: any[]) {
+	const cfg = vsc.workspace.getConfiguration()
+	const commands = cfg.get<string[]>('atmo.util.multicommand.commands', [])
+
+	if (commands)
+		for (const command of commands)
+			vsc.commands.executeCommand(command)
 }

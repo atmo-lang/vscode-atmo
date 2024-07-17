@@ -37,7 +37,8 @@
   "contributes": {
     "commands": [
       { "command": "atmo.cmd.eval.quick", "title": "Atmo: Quick-Eval" },
-      { "command": "atmo.cmd.eval.repl", "title": "Atmo: new REPL from expression..." }
+      { "command": "atmo.cmd.eval.repl", "title": "Atmo: new REPL from expression..." },
+      { "command": "atmo.util.multicommand", "title": "Run all configured `atmo.util.multicommand.commands`" }
     ],
     "languages": [
       {
@@ -78,6 +79,13 @@
             "Requires extension restart. If `true`, disables most extension functionality, other than basic language grammar (syntax highlighting, brackets auto-closing etc)." },
           "atmo.lsp.cmd": { "type": "array", "default": [ "atmo", "lsp" ], "description":
             "Requires extension restart. Command name and args of the Atmo language server to run." }
+        }
+      },
+      {
+        "title": "Utilities",
+        "properties": {
+          "atmo.util.multicommand.commands": { "type": "array", "default": [ ], "description":
+            "Combines multiple commands into one, allowing for keyboard shortcut convenience." }
         }
       }
     ],
