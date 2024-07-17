@@ -22,7 +22,6 @@ export type Tok = {
         Char: number
     }
     Src: string
-    parent: Toks
 }
 export enum TokKind {
     Begin = 1,
@@ -63,7 +62,7 @@ export class Provider implements tree_multi.Provider {
     }
 
     getParentItem(item?: Tok) {
-        return (item as Tok).parent
+        return undefined
     }
 
     async getSubItems(treeView: tree_multi.TreeMulti, item?: Tok): Promise<Toks> {

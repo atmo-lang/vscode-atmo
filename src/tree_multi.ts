@@ -2,7 +2,7 @@ import * as vsc from 'vscode'
 
 import * as lsp from './lsp'
 import * as tree from './tree'
-import * as tree_ast from './tree_ast'
+import * as tree_pkgs from './tree_pkgs'
 import * as tree_toks from './tree_toks'
 
 
@@ -12,11 +12,21 @@ let treeMulti: TreeMulti
 export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
     return [
         vsc.window.registerTreeDataProvider('atmoViewInspectors', treeMulti = new TreeMulti(ctx)),
-        vsc.commands.registerCommand('atmo.inspector.none', () => { treeMulti.provider = 0 }),
-        vsc.commands.registerCommand('atmo.inspector.pkgs', () => { treeMulti.provider = 0 }),
-        vsc.commands.registerCommand('atmo.inspector.toks', () => { treeMulti.provider = 1 }),
-        vsc.commands.registerCommand('atmo.inspector.ast', () => { treeMulti.provider = 0 }),
-        vsc.commands.registerCommand('atmo.inspector.est', () => { treeMulti.provider = 0 }),
+        vsc.commands.registerCommand('atmo.inspector.none', () => {
+            treeMulti.provider = 0
+        }),
+        vsc.commands.registerCommand('atmo.inspector.pkgs', () => {
+            treeMulti.provider = 1
+        }),
+        vsc.commands.registerCommand('atmo.inspector.toks', () => {
+            treeMulti.provider = 2
+        }),
+        vsc.commands.registerCommand('atmo.inspector.ast', () => {
+            treeMulti.provider = 0
+        }),
+        vsc.commands.registerCommand('atmo.inspector.est', () => {
+            treeMulti.provider = 0
+        }),
     ]
 }
 
@@ -52,6 +62,7 @@ export class TreeMulti extends tree.Tree<any> {
         super(ctx, "multi", tree.RefreshKind.OnDocEvents, tree.RefreshKind.OnFsEvents)
         this.providers = [
             new EmptyProvider(),
+            new tree_pkgs.Provider(),
             new tree_toks.Provider(),
         ]
     }
