@@ -3,10 +3,6 @@ import * as vsc from 'vscode'
 import * as lsp from './lsp'
 import * as repl from './repl'
 import * as tree_multi from './tree_multi'
-import * as tree_pkgs from './tree_pkgs'
-import * as tree_toks from './tree_toks'
-import * as tree_ast from './tree_ast'
-import * as tree_est from './tree_est'
 
 
 export let atmoPath = process.env["ATMO_PATH"] ?? "/home/_/c/at"
