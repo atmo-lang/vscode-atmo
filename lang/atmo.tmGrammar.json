@@ -48,6 +48,10 @@
 					"name": "comment.atmo.block",
 					"begin": "\\/\\*",
 					"end": "\\*\\/"
+				}, {
+					"name": "comment.atmo",
+					"begin": "(?<!\\s+)^(#!\\/usr\\/bin\\/env\\s+atmo.*)",
+					"end": "$"
 				}
 			]
 		},
