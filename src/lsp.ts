@@ -34,7 +34,10 @@ export function init(ctx: vsc.ExtensionContext) {
             } as vsc_lsp.ServerOptions,
 
             {
-                documentSelector: [{ language: 'atmo', scheme: 'file' }],
+                documentSelector: [
+                    { language: 'atmo', scheme: 'file' },
+                    { language: 'atmo', scheme: 'vscode-notebook-cell' },
+                ],
                 revealOutputChannelOn: vsc_lsp.RevealOutputChannelOn.Error,
                 synchronize: { fileEvents: vsc.workspace.createFileSystemWatcher('**/*.at') },
             } as vsc_lsp.LanguageClientOptions
