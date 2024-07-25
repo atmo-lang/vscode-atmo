@@ -4,7 +4,7 @@ import * as tree from './tree'
 import * as tree_pkgs from './tree_pkgs'
 import * as tree_toks from './tree_toks'
 import * as tree_ast from './tree_ast'
-import * as tree_est from './tree_est'
+import * as tree_sema from './tree_sema'
 
 
 let treeMulti: TreeMulti
@@ -15,7 +15,7 @@ enum ProviderImpl {
     Pkgs = 1,
     Toks = 2,
     Ast = 3,
-    Est = 4,
+    Sema = 4,
 
     notZeroForJSBugginess,
 }
@@ -25,7 +25,7 @@ const implIcons = new Map<ProviderImpl, string>([
     [ProviderImpl.Pkgs, "package"],
     [ProviderImpl.Toks, "list-flat"],
     [ProviderImpl.Ast, "list-tree"],
-    [ProviderImpl.Est, "symbol-misc"],
+    [ProviderImpl.Sema, "symbol-misc"],
 ])
 
 
@@ -44,8 +44,8 @@ export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
         vsc.commands.registerCommand('atmo.inspector.ast', () => {
             treeMulti.provider = ProviderImpl.Ast
         }),
-        vsc.commands.registerCommand('atmo.inspector.est', () => {
-            treeMulti.provider = ProviderImpl.Est
+        vsc.commands.registerCommand('atmo.inspector.sema', () => {
+            treeMulti.provider = ProviderImpl.Sema
         }),
     ]
 }
@@ -65,7 +65,7 @@ class EmptyProvider implements Provider {
             ((item === ProviderImpl.Pkgs) ? "·\tin-session packages"
                 : (item === ProviderImpl.Toks) ? "·\tlexing"
                     : (item === ProviderImpl.Ast) ? "·\tparsing (AST)"
-                        : (item === ProviderImpl.Est) ? "·\texpansion (EST)"
+                        : (item === ProviderImpl.Sema) ? "·\tsema"
                             : "No inspector currently selected. Pick one:"),
             false, item)
         ret.iconPath = new vsc.ThemeIcon(implIcons.get(item)!)
@@ -77,7 +77,7 @@ class EmptyProvider implements Provider {
     }
     async getSubItems(_: TreeMulti, item?: ProviderImpl): Promise<ProviderImpl[]> {
         return item ? []
-            : [ProviderImpl.notZeroForJSBugginess, ProviderImpl.Pkgs, ProviderImpl.Toks, ProviderImpl.Ast, ProviderImpl.Est]
+            : [ProviderImpl.notZeroForJSBugginess, ProviderImpl.Pkgs, ProviderImpl.Toks, ProviderImpl.Ast, ProviderImpl.Sema]
     }
     onClick(treeView: TreeMulti, item: ProviderImpl): void {
         if ((item > ProviderImpl.None) && (item < ProviderImpl.notZeroForJSBugginess))
@@ -97,7 +97,7 @@ export class TreeMulti extends tree.Tree<any> {
             new tree_pkgs.Provider(),
             new tree_toks.Provider(),
             new tree_ast.Provider(),
-            new tree_est.Provider(),
+            new tree_sema.Provider(),
         ]
     }
 
