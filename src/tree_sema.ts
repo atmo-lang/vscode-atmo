@@ -5,73 +5,77 @@ import * as tree from './tree'
 import * as tree_multi from './tree_multi'
 
 
-export type EstNodes = EstNode[]
-export type EstNode = {
-    parent?: EstNode
-    Kind: EstNodeKind
+export type MoNodes = MoNode[]
+export type MoNode = {
+    parent?: MoNode
+    PrimTypeTag: MoPrimTypeTag
     ClientInfo?: {
         SrcFilePath: string
         SrcFileSpan?: lsp.SrcFileSpan
         SrcFileText?: string
     }
-    Self?: any
-    selfAsNodes: EstNodes
-    label?: string
+    Nodes: MoNodes
 }
-export enum EstNodeKind {
-    None = 0,
-    Ident = 1,
-    Lit = 2,
-    Call = 3,
-    Macro = 4,
+export enum MoPrimTypeTag {
+    Type,
+    Ident,
+    NumInt,
+    NumUint,
+    NumFloat,
+    Char,
+    Str,
+    Err,
+    Dict,
+    List,
+    Call,
+    Func,
 }
 
-const nodeKindIcons = new Map<EstNodeKind, string>([
-    [EstNodeKind.None, "blank"],
-    [EstNodeKind.Call, "symbol-method"],
-    [EstNodeKind.Ident, "symbol-variable"],
-    [EstNodeKind.Lit, "symbol-constant"],
-    [EstNodeKind.Macro, "symbol-color"],
+const nodeKindIcons = new Map<MoPrimTypeTag, string>([
+    [MoPrimTypeTag.Type, "symbol-parameter"],
+    [MoPrimTypeTag.Ident, "symbol-variable"],
+    [MoPrimTypeTag.NumInt, "symbol-operator"],
+    [MoPrimTypeTag.NumUint, "symbol-operator"],
+    [MoPrimTypeTag.NumFloat, "symbol-operator"],
+    [MoPrimTypeTag.Char, "symbol-string"],
+    [MoPrimTypeTag.Str, "symbol-string"],
+    [MoPrimTypeTag.Err, "symbol-event"],
+    [MoPrimTypeTag.Dict, "symbol-namespace"],
+    [MoPrimTypeTag.List, "symbol-array"],
+    [MoPrimTypeTag.Call, "symbol-color"],
+    [MoPrimTypeTag.Func, "symbol-method"],
 ])
 
 
 export class Provider implements tree_multi.Provider {
-    getItem(treeView: tree_multi.TreeMulti, item: EstNode): vsc.TreeItem {
-        const ret = new tree.Item(`${(item.Kind === EstNodeKind.None) ? item.label : EstNodeKind[item.Kind]}`,
-            (item.Self || (item.selfAsNodes && item.selfAsNodes.length)) ? true : false, item)
-        ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.Kind)!)
+    getItem(treeView: tree_multi.TreeMulti, item: MoNode): vsc.TreeItem {
+        const ret = new tree.Item(`${MoPrimTypeTag[item.PrimTypeTag]}`, (item.Nodes && item.Nodes.length) ? true : false, item)
+        ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.PrimTypeTag)!)
         if (ret.description = item.ClientInfo?.SrcFileText ?? "") {
             ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n", true)
-            if (item.Self)
-                ret.tooltip.appendMarkdown("\n___\n").appendCodeblock(JSON.stringify(item.Self, null, 2), 'json')
         }
         ret.command = treeView.cmdOnClick(ret)
         return ret
     }
 
-    getParentItem(item: EstNode): EstNode | undefined {
+    getParentItem(item: MoNode): MoNode | undefined {
         return item.parent
     }
 
-    async getSubItems(treeView: tree_multi.TreeMulti, item?: EstNode): Promise<EstNodes> {
+    async getSubItems(treeView: tree_multi.TreeMulti, item?: MoNode): Promise<MoNodes> {
         if (!treeView.doc)
             return []
 
-        if (item) {
-            if (item.Self && !item.selfAsNodes) {
-                item.selfAsNodes = objNodes(item.Self)
-                setParents(item.selfAsNodes)
-            }
-            return item.selfAsNodes ?? []
-        }
+        if (item)
+            return item.Nodes
 
-        const ret: EstNodes | undefined = await lsp.executeCommand('getSrcPkgEst', treeView.doc.uri.fsPath)
+        const ret: MoNodes | undefined = await lsp.executeCommand('getSrcPkgMo', treeView.doc.uri.fsPath)
         if (ret && Array.isArray(ret) && ret.length)
             setParents(ret)
         return ret ?? []
     }
 
-    onClick(treeView: tree_multi.TreeMulti, item: EstNode): void {
+    onClick(_treeView: tree_multi.TreeMulti, item: MoNode): void {
         if (item.ClientInfo && item.ClientInfo.SrcFilePath && item.ClientInfo.SrcFilePath.length) {
             const range: vsc.Range | undefined = item.ClientInfo.SrcFileSpan ? lsp.toVscRange(item.ClientInfo.SrcFileSpan) : undefined
             vsc.workspace.openTextDocument(item.ClientInfo.SrcFilePath).then(
@@ -83,37 +87,19 @@ export class Provider implements tree_multi.Provider {
 }
 
 
-function objNodes(it: any[] | { [_: string]: any }): EstNodes {
-    const ret: EstNodes = [], is_arr = (Array.isArray(it))
-    for (const idx in it) {
-        const val = (it as any)[idx]
-        const name = is_arr ? `[${idx}]` : idx
-        if (!val)
-            ret.push({ label: name + ": <null>", Kind: EstNodeKind.None, selfAsNodes: [] })
-        else if (Array.isArray(val))
-            ret.push({ label: name, Kind: EstNodeKind.None, selfAsNodes: objNodes(val) })
-        else if (typeof val === 'object')
-            ret.push({ label: name, Kind: EstNodeKind.None, selfAsNodes: objNodes(val) })
-        else
-            ret.push({ label: name + ": " + val, Kind: EstNodeKind.None, selfAsNodes: [] })
-    }
-    return ret
-}
-
-
-function setParents(nodes: EstNodes) {
+function setParents(nodes: MoNodes) {
     walkNodes(nodes, (node) => {
-        if (node.selfAsNodes && node.selfAsNodes.length)
-            for (const sub_node of node.selfAsNodes)
+        if (node.Nodes && node.Nodes.length)
+            for (const sub_node of node.Nodes)
                 sub_node.parent = node
     })
 }
 
 
-function walkNodes(nodes: EstNodes, onNode: (_: EstNode) => void) {
+function walkNodes(nodes: MoNodes, onNode: (_: MoNode) => void) {
     for (const node of nodes) {
         onNode(node)
-        if (node.selfAsNodes)
-            walkNodes(node.selfAsNodes, onNode)
+        if (node.Nodes)
+            walkNodes(node.Nodes, onNode)
     }
 }
