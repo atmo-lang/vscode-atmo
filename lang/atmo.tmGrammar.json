@@ -107,7 +107,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.atmo",
-					"match": "(@|%)[\\p{L}_]+[\\p{L}\\d_]*"
+					"match": "@[\\p{L}_]+[\\p{L}\\d_]*"
 				}
 			]
 		},
@@ -115,7 +115,7 @@
 			"patterns": [
 				{
 					"name": "keyword.operator.atmo",
-					"match": "#|([\\p{S}\\p{Me}\\p{Pi}\\p{Pf}\\p{Pd}\\p{Pc}!¡§%&/?\\\\¿@*ˍ·…]+)"
+					"match": "#|$|([\\p{S}\\p{Me}\\p{Pi}\\p{Pf}\\p{Pd}\\p{Pc}!¡§%&/?\\\\¿@*ˍ·…]+)"
 				}
 			]
 		},
