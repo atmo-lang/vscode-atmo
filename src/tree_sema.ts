@@ -10,13 +10,15 @@ export type MoNode = {
     parent?: MoNode
     PrimTypeTag: MoPrimTypeTag
     ClientInfo?: {
-        SrcFilePath: string
+        Str?: string
+        SrcFilePath?: string
         SrcFileSpan?: lsp.SrcFileSpan
         SrcFileText?: string
     }
     Nodes: MoNodes
 }
 export enum MoPrimTypeTag {
+    Never = -2,
     DictEntry = -1,
     Type,
     Ident,
@@ -33,6 +35,8 @@ export enum MoPrimTypeTag {
 }
 
 const nodeKindIcons = new Map<MoPrimTypeTag, string>([
+    [MoPrimTypeTag.Never, "symbol-event"],
+    [MoPrimTypeTag.DictEntry, "symbol-namespace"],
     [MoPrimTypeTag.Type, "symbol-parameter"],
     [MoPrimTypeTag.Ident, "symbol-variable"],
     [MoPrimTypeTag.NumInt, "symbol-operator"],
@@ -42,7 +46,6 @@ const nodeKindIcons = new Map<MoPrimTypeTag, string>([
     [MoPrimTypeTag.Str, "symbol-string"],
     [MoPrimTypeTag.Err, "symbol-event"],
     [MoPrimTypeTag.Dict, "symbol-namespace"],
-    [MoPrimTypeTag.DictEntry, "symbol-namespace"],
     [MoPrimTypeTag.List, "symbol-array"],
     [MoPrimTypeTag.Call, "symbol-color"],
     [MoPrimTypeTag.Func, "symbol-method"],
@@ -59,7 +62,7 @@ export class Provider implements tree_multi.Provider {
     getItem(treeView: tree_multi.TreeMulti, item: MoNode): vsc.TreeItem {
         const ret = new tree.Item(`${MoPrimTypeTag[item.PrimTypeTag]}`, (item.Nodes && item.Nodes.length) ? true : false, item)
         ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.PrimTypeTag)!)
-        if (ret.description = item.ClientInfo?.SrcFileText ?? "") {
+        if (ret.description = item.ClientInfo?.Str ?? item.ClientInfo?.SrcFileText ?? "") {
             ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n", true)
         }
         ret.command = treeView.cmdOnClick(ret)
