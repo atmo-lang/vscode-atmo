@@ -25,7 +25,7 @@ export enum AstNodeKind {
 
 const nodeKindIcons = new Map<AstNodeKind, string>([
     [AstNodeKind.Err, "symbol-event"],
-    [AstNodeKind.Group, "symbol-namespace"],
+    [AstNodeKind.Group, "symbol-array"],
     [AstNodeKind.Ident, "symbol-variable"],
     [AstNodeKind.Lit, "symbol-constant"],
     [AstNodeKind.Comment, "comment"],
