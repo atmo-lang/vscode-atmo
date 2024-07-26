@@ -83,7 +83,7 @@
 			"patterns": [
 				{
 					"name": "constant.other.atmo",
-					"match": "(\\b|\\s|^)#[^\\s\\(\\[\\\"'{]+(\\b|\\s|$)"
+					"match": "(\\b|\\s|^)#[@\"'`\\p{L}\\p{N}]+(\\b|\\s|$)"
 				}
 			]
 		},
