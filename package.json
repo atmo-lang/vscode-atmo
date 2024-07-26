@@ -96,7 +96,7 @@
     },
     "views": {
       "atmoVc": [
-        { "id": "atmoViewInspectors", "name": "Inspectors", "icon": "$(list-tree)" }
+        { "id": "atmoViewInspectors", "name": "Insider Inspectors", "icon": "$(list-tree)" }
       ]
     },
     "menus": {
@@ -110,12 +110,12 @@
       ]
     },
     "commands": [
-      { "command": "atmo.inspector.none", "title": "Atmo 0: none", "icon": "$(clear-all)" },
-      { "command": "atmo.inspector.pkgs", "title": "Atmo 1: in-session packs", "icon": "$(package)" },
-      { "command": "atmo.inspector.toks", "title": "Atmo 2: lexemes", "icon": "$(list-flat)" },
-      { "command": "atmo.inspector.ast", "title": "Atmo 3: parse tree", "icon": "$(list-tree)" },
-      { "command": "atmo.inspector.semaPre", "title": "Atmo 4: pre-sema tree", "icon": "$(symbol-misc)" },
-      { "command": "atmo.inspector.semaPost", "title": "Atmo 5: post-sema tree", "icon": "$(symbol-misc)" },
+      { "command": "atmo.inspector.none", "title": "Atmo insider 0: none", "icon": "$(clear-all)" },
+      { "command": "atmo.inspector.pkgs", "title": "Atmo insider 1: in-session packs", "icon": "$(package)" },
+      { "command": "atmo.inspector.toks", "title": "Atmo insider 2: lexemes", "icon": "$(list-flat)" },
+      { "command": "atmo.inspector.ast", "title": "Atmo insider 3: parse tree", "icon": "$(list-tree)" },
+      { "command": "atmo.inspector.semaPre", "title": "Atmo insider 4: pre-sema tree", "icon": "$(symbol-misc)" },
+      { "command": "atmo.inspector.semaPost", "title": "Atmo insider 5: post-sema tree", "icon": "$(symbol-misc)" },
       { "command": "atmo.cmd.eval.quick", "title": "Atmo: Quick-Eval" },
       { "command": "atmo.cmd.eval.repl", "title": "Atmo: new REPL from expression..." },
       { "command": "atmo.util.multicommand", "title": "Run all configured `atmo.util.multicommand.commands`" }
