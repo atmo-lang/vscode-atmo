@@ -50,6 +50,12 @@ const nodeKindIcons = new Map<MoPrimTypeTag, string>([
 
 
 export class Provider implements tree_multi.Provider {
+    readonly isPostSema: boolean
+
+    constructor(isPostSema: boolean) {
+        this.isPostSema = isPostSema
+    }
+
     getItem(treeView: tree_multi.TreeMulti, item: MoNode): vsc.TreeItem {
         const ret = new tree.Item(`${MoPrimTypeTag[item.PrimTypeTag]}`, (item.Nodes && item.Nodes.length) ? true : false, item)
         ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.PrimTypeTag)!)
@@ -71,7 +77,7 @@ export class Provider implements tree_multi.Provider {
         if (item)
             return item.Nodes
 
-        const ret: MoNodes | undefined = await lsp.executeCommand('getSrcPkgMo', treeView.doc.uri.fsPath)
+        const ret: MoNodes | undefined = await lsp.executeCommand('getSrcPkgMo' + (this.isPostSema ? 'Post' : 'Pre'), treeView.doc.uri.fsPath)
         if (ret && Array.isArray(ret) && ret.length)
             setParents(ret)
         return ret ?? []

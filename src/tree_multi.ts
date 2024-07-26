@@ -15,7 +15,8 @@ enum ProviderImpl {
     Pkgs = 1,
     Toks = 2,
     Ast = 3,
-    Sema = 4,
+    SemaPre = 4,
+    SemaPost = 5,
 
     notZeroForJSBugginess,
 }
@@ -25,7 +26,8 @@ const implIcons = new Map<ProviderImpl, string>([
     [ProviderImpl.Pkgs, "package"],
     [ProviderImpl.Toks, "list-flat"],
     [ProviderImpl.Ast, "list-tree"],
-    [ProviderImpl.Sema, "symbol-misc"],
+    [ProviderImpl.SemaPre, "symbol-misc"],
+    [ProviderImpl.SemaPost, "symbol-misc"],
 ])
 
 
@@ -44,8 +46,11 @@ export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
         vsc.commands.registerCommand('atmo.inspector.ast', () => {
             treeMulti.provider = ProviderImpl.Ast
         }),
-        vsc.commands.registerCommand('atmo.inspector.sema', () => {
-            treeMulti.provider = ProviderImpl.Sema
+        vsc.commands.registerCommand('atmo.inspector.semaPre', () => {
+            treeMulti.provider = ProviderImpl.SemaPre
+        }),
+        vsc.commands.registerCommand('atmo.inspector.semaPost', () => {
+            treeMulti.provider = ProviderImpl.SemaPost
         }),
     ]
 }
@@ -63,10 +68,11 @@ class EmptyProvider implements Provider {
     getItem(treeView: TreeMulti, item: ProviderImpl): vsc.TreeItem {
         const ret = new tree.Item<ProviderImpl>(
             ((item === ProviderImpl.Pkgs) ? "·\tin-session packages"
-                : (item === ProviderImpl.Toks) ? "·\tlexing"
-                    : (item === ProviderImpl.Ast) ? "·\tparsing (AST)"
-                        : (item === ProviderImpl.Sema) ? "·\tsema"
-                            : "No inspector currently selected. Pick one:"),
+                : (item === ProviderImpl.Toks) ? "·\ttokenization lexemes"
+                    : (item === ProviderImpl.Ast) ? "·\tparse tree"
+                        : (item === ProviderImpl.SemaPre) ? "·\tpre-sema tree"
+                            : (item === ProviderImpl.SemaPost) ? "·\tpost-sema tree"
+                                : "No inspector currently selected. Pick one:"),
             false, item)
         ret.iconPath = new vsc.ThemeIcon(implIcons.get(item)!)
         ret.command = treeView.cmdOnClick(ret)
@@ -77,7 +83,7 @@ class EmptyProvider implements Provider {
     }
     async getSubItems(_: TreeMulti, item?: ProviderImpl): Promise<ProviderImpl[]> {
         return item ? []
-            : [ProviderImpl.notZeroForJSBugginess, ProviderImpl.Pkgs, ProviderImpl.Toks, ProviderImpl.Ast, ProviderImpl.Sema]
+            : [ProviderImpl.notZeroForJSBugginess, ProviderImpl.Pkgs, ProviderImpl.Toks, ProviderImpl.Ast, ProviderImpl.SemaPre, ProviderImpl.SemaPost]
     }
     onClick(treeView: TreeMulti, item: ProviderImpl): void {
         if ((item > ProviderImpl.None) && (item < ProviderImpl.notZeroForJSBugginess))
@@ -97,7 +103,8 @@ export class TreeMulti extends tree.Tree<any> {
             new tree_pkgs.Provider(),
             new tree_toks.Provider(),
             new tree_ast.Provider(),
-            new tree_sema.Provider(),
+            new tree_sema.Provider(false),
+            new tree_sema.Provider(true),
         ]
     }
 

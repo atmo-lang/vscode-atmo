@@ -96,7 +96,7 @@
     },
     "views": {
       "atmoVc": [
-        { "id": "atmoViewInspectors", "name": "Inspector", "icon": "$(list-tree)" }
+        { "id": "atmoViewInspectors", "name": "Inspectors", "icon": "$(list-tree)" }
       ]
     },
     "menus": {
@@ -105,15 +105,17 @@
         { "command": "atmo.inspector.pkgs", "when": "view == atmoViewInspectors", "group": "navigation" },
         { "command": "atmo.inspector.toks", "when": "view == atmoViewInspectors", "group": "navigation" },
         { "command": "atmo.inspector.ast", "when": "view == atmoViewInspectors", "group": "navigation" },
-        { "command": "atmo.inspector.sema", "when": "view == atmoViewInspectors", "group": "navigation" }
+        { "command": "atmo.inspector.semaPre", "when": "view == atmoViewInspectors", "group": "navigation" },
+        { "command": "atmo.inspector.semaPost", "when": "view == atmoViewInspectors", "group": "navigation" }
       ]
     },
     "commands": [
       { "command": "atmo.inspector.none", "title": "Atmo 0: none", "icon": "$(clear-all)" },
       { "command": "atmo.inspector.pkgs", "title": "Atmo 1: in-session packs", "icon": "$(package)" },
-      { "command": "atmo.inspector.toks", "title": "Atmo 2: lexing", "icon": "$(list-flat)" },
-      { "command": "atmo.inspector.ast", "title": "Atmo 3: AST", "icon": "$(list-tree)" },
-      { "command": "atmo.inspector.sema", "title": "Atmo 4: sema", "icon": "$(symbol-misc)" },
+      { "command": "atmo.inspector.toks", "title": "Atmo 2: lexemes", "icon": "$(list-flat)" },
+      { "command": "atmo.inspector.ast", "title": "Atmo 3: parse tree", "icon": "$(list-tree)" },
+      { "command": "atmo.inspector.semaPre", "title": "Atmo 4: pre-sema tree", "icon": "$(symbol-misc)" },
+      { "command": "atmo.inspector.semaPost", "title": "Atmo 5: post-sema tree", "icon": "$(symbol-misc)" },
       { "command": "atmo.cmd.eval.quick", "title": "Atmo: Quick-Eval" },
       { "command": "atmo.cmd.eval.repl", "title": "Atmo: new REPL from expression..." },
       { "command": "atmo.util.multicommand", "title": "Run all configured `atmo.util.multicommand.commands`" }
