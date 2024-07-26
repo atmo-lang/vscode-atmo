@@ -17,6 +17,7 @@ export type MoNode = {
     Nodes: MoNodes
 }
 export enum MoPrimTypeTag {
+    DictEntry = -1,
     Type,
     Ident,
     NumInt,
@@ -41,6 +42,7 @@ const nodeKindIcons = new Map<MoPrimTypeTag, string>([
     [MoPrimTypeTag.Str, "symbol-string"],
     [MoPrimTypeTag.Err, "symbol-event"],
     [MoPrimTypeTag.Dict, "symbol-namespace"],
+    [MoPrimTypeTag.DictEntry, "symbol-namespace"],
     [MoPrimTypeTag.List, "symbol-array"],
     [MoPrimTypeTag.Call, "symbol-color"],
     [MoPrimTypeTag.Func, "symbol-method"],
