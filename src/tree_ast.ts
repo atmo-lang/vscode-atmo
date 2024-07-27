@@ -16,16 +16,18 @@ export type AstNode = {
     Lit: number | string | null
 }
 export enum AstNodeKind {
-    Err = 0,
-    Comment = 1,
-    Ident = 2,
-    Lit = 3,
-    Group = 4,
+    Err,
+    Comment,
+    Ident,
+    Lit,
+    Group,
+    Block,
 }
 
 const nodeKindIcons = new Map<AstNodeKind, string>([
     [AstNodeKind.Err, "symbol-event"],
     [AstNodeKind.Group, "symbol-array"],
+    [AstNodeKind.Block, "symbol-namespace"],
     [AstNodeKind.Ident, "symbol-variable"],
     [AstNodeKind.Lit, "symbol-constant"],
     [AstNodeKind.Comment, "comment"],
