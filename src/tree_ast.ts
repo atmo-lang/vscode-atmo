@@ -21,13 +21,13 @@ export enum AstNodeKind {
     Ident,
     Lit,
     Group,
-    Block,
+    BlockLine,
 }
 
 const nodeKindIcons = new Map<AstNodeKind, string>([
     [AstNodeKind.Err, "symbol-event"],
     [AstNodeKind.Group, "symbol-array"],
-    [AstNodeKind.Block, "symbol-namespace"],
+    [AstNodeKind.BlockLine, "symbol-namespace"],
     [AstNodeKind.Ident, "symbol-variable"],
     [AstNodeKind.Lit, "symbol-constant"],
     [AstNodeKind.Comment, "comment"],
