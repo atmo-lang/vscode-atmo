@@ -1,10 +1,10 @@
 import * as vsc from 'vscode'
 
 import * as tree from './tree'
-import * as tree_pkgs from './tree_pkgs'
+import * as tree_packs from './tree_packs'
 import * as tree_toks from './tree_toks'
 import * as tree_ast from './tree_ast'
-import * as tree_sema from './tree_sema'
+import * as tree_mo from './tree_mo'
 
 
 let treeMulti: TreeMulti
@@ -12,22 +12,22 @@ let treeMulti: TreeMulti
 
 enum ProviderImpl {
     None = 0,
-    Pkgs = 1,
+    Packs = 1,
     Toks = 2,
     Ast = 3,
-    SemaPre = 4,
-    SemaPost = 5,
+    MoOrig = 4,
+    MoSem = 5,
 
-    notZeroForJSBugginess,
+    _aNonZeroForJSBugginess,
 }
 const implIcons = new Map<ProviderImpl, string>([
     [ProviderImpl.None, "info"],
-    [ProviderImpl.notZeroForJSBugginess, "info"],
-    [ProviderImpl.Pkgs, "package"],
+    [ProviderImpl._aNonZeroForJSBugginess, "info"],
+    [ProviderImpl.Packs, "package"],
     [ProviderImpl.Toks, "list-flat"],
     [ProviderImpl.Ast, "list-tree"],
-    [ProviderImpl.SemaPre, "symbol-misc"],
-    [ProviderImpl.SemaPost, "symbol-misc"],
+    [ProviderImpl.MoOrig, "symbol-misc"],
+    [ProviderImpl.MoSem, "symbol-misc"],
 ])
 
 
@@ -37,8 +37,8 @@ export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
         vsc.commands.registerCommand('atmo.inspector.none', () => {
             treeMulti.provider = ProviderImpl.None
         }),
-        vsc.commands.registerCommand('atmo.inspector.pkgs', () => {
-            treeMulti.provider = ProviderImpl.Pkgs
+        vsc.commands.registerCommand('atmo.inspector.packs', () => {
+            treeMulti.provider = ProviderImpl.Packs
         }),
         vsc.commands.registerCommand('atmo.inspector.toks', () => {
             treeMulti.provider = ProviderImpl.Toks
@@ -46,11 +46,11 @@ export function init(ctx: vsc.ExtensionContext): { dispose(): any }[] {
         vsc.commands.registerCommand('atmo.inspector.ast', () => {
             treeMulti.provider = ProviderImpl.Ast
         }),
-        vsc.commands.registerCommand('atmo.inspector.semaPre', () => {
-            treeMulti.provider = ProviderImpl.SemaPre
+        vsc.commands.registerCommand('atmo.inspector.moOrig', () => {
+            treeMulti.provider = ProviderImpl.MoOrig
         }),
-        vsc.commands.registerCommand('atmo.inspector.semaPost', () => {
-            treeMulti.provider = ProviderImpl.SemaPost
+        vsc.commands.registerCommand('atmo.inspector.moSem', () => {
+            treeMulti.provider = ProviderImpl.MoSem
         }),
     ]
 }
@@ -67,11 +67,11 @@ export interface Provider {
 class EmptyProvider implements Provider {
     getItem(treeView: TreeMulti, item: ProviderImpl): vsc.TreeItem {
         const ret = new tree.Item<ProviderImpl>(
-            ((item === ProviderImpl.Pkgs) ? "·\tin-session packages"
-                : (item === ProviderImpl.Toks) ? "·\ttokenization lexemes"
-                    : (item === ProviderImpl.Ast) ? "·\tparse tree"
-                        : (item === ProviderImpl.SemaPre) ? "·\tpre-sema tree"
-                            : (item === ProviderImpl.SemaPost) ? "·\tpost-sema tree"
+            ((item === ProviderImpl.Packs) ? "·\tin-session packages"
+                : (item === ProviderImpl.Toks) ? "·\tlexemes from source"
+                    : (item === ProviderImpl.Ast) ? "·\tparse tree from lexemes"
+                        : (item === ProviderImpl.MoOrig) ? "·\tMo from parse tree"
+                            : (item === ProviderImpl.MoSem) ? "·\tSem from Mo"
                                 : "No inspector currently selected. Pick one:"),
             false, item)
         ret.iconPath = new vsc.ThemeIcon(implIcons.get(item)!)
@@ -83,10 +83,10 @@ class EmptyProvider implements Provider {
     }
     async getSubItems(_: TreeMulti, item?: ProviderImpl): Promise<ProviderImpl[]> {
         return item ? []
-            : [ProviderImpl.notZeroForJSBugginess, ProviderImpl.Pkgs, ProviderImpl.Toks, ProviderImpl.Ast, ProviderImpl.SemaPre, ProviderImpl.SemaPost]
+            : [ProviderImpl._aNonZeroForJSBugginess, ProviderImpl.Packs, ProviderImpl.Toks, ProviderImpl.Ast, ProviderImpl.MoOrig, ProviderImpl.MoSem]
     }
     onClick(treeView: TreeMulti, item: ProviderImpl): void {
-        if ((item > ProviderImpl.None) && (item < ProviderImpl.notZeroForJSBugginess))
+        if ((item > ProviderImpl.None) && (item < ProviderImpl._aNonZeroForJSBugginess))
             treeView.provider = item
     }
 }
@@ -100,11 +100,11 @@ export class TreeMulti extends tree.Tree<any> {
         super(ctx, "multi", tree.RefreshKind.OnDocEvents, tree.RefreshKind.OnFsEvents)
         this.providers = [
             new EmptyProvider(),
-            new tree_pkgs.Provider(),
+            new tree_packs.Provider(),
             new tree_toks.Provider(),
             new tree_ast.Provider(),
-            new tree_sema.Provider(false),
-            new tree_sema.Provider(true),
+            new tree_mo.Provider(false),
+            new tree_mo.Provider(true),
         ]
     }
 
@@ -123,7 +123,7 @@ export class TreeMulti extends tree.Tree<any> {
                     return
                 case ([ProviderImpl.Ast, ProviderImpl.Toks].includes(this.currentProvider)) && (kind !== tree.RefreshKind.OnDocEvents):
                     return
-                case ([ProviderImpl.Pkgs].includes(this.currentProvider) && (kind !== tree.RefreshKind.OnFsEvents)):
+                case ([ProviderImpl.Packs].includes(this.currentProvider) && (kind !== tree.RefreshKind.OnFsEvents)):
                     return
             }
         super.refresh(kind, evt)

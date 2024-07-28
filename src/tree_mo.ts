@@ -53,10 +53,10 @@ const nodeKindIcons = new Map<MoPrimTypeTag, string>([
 
 
 export class Provider implements tree_multi.Provider {
-    readonly isPostSema: boolean
+    readonly isMoSem: boolean
 
-    constructor(isPostSema: boolean) {
-        this.isPostSema = isPostSema
+    constructor(isMoSem: boolean) {
+        this.isMoSem = isMoSem
     }
 
     getItem(treeView: tree_multi.TreeMulti, item: MoNode): vsc.TreeItem {
@@ -80,7 +80,7 @@ export class Provider implements tree_multi.Provider {
         if (item)
             return item.Nodes
 
-        const ret: MoNodes | undefined = await lsp.executeCommand('getSrcPkgMo' + (this.isPostSema ? 'Post' : 'Pre'), treeView.doc.uri.fsPath)
+        const ret: MoNodes | undefined = await lsp.executeCommand('getSrcPackMo' + (this.isMoSem ? 'Sem' : 'Orig'), treeView.doc.uri.fsPath)
         if (ret && Array.isArray(ret) && ret.length)
             setParents(ret)
         return ret ?? []
