@@ -10,7 +10,6 @@ export type MoNode = {
     parent?: MoNode
     PrimTypeTag: MoPrimTypeTag
     ClientInfo?: {
-        Str?: string
         SrcFilePath?: string
         SrcFileSpan?: lsp.SrcFileSpan
         SrcFileText?: string
@@ -53,18 +52,11 @@ const nodeKindIcons = new Map<MoPrimTypeTag, string>([
 
 
 export class Provider implements tree_multi.Provider {
-    readonly isMoSem: boolean
-
-    constructor(isMoSem: boolean) {
-        this.isMoSem = isMoSem
-    }
-
     getItem(treeView: tree_multi.TreeMulti, item: MoNode): vsc.TreeItem {
         const ret = new tree.Item(`${MoPrimTypeTag[item.PrimTypeTag]}`, (item.Nodes && item.Nodes.length) ? true : false, item)
         ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.PrimTypeTag)!)
-        if (ret.description = item.ClientInfo?.Str ?? item.ClientInfo?.SrcFileText ?? "") {
+        if ((ret.description = item.ClientInfo?.SrcFileText ?? "") && ret.description.length)
             ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n", true)
-        }
         ret.command = treeView.cmdOnClick(ret)
         return ret
     }
@@ -80,7 +72,7 @@ export class Provider implements tree_multi.Provider {
         if (item)
             return item.Nodes
 
-        const ret: MoNodes | undefined = await lsp.executeCommand('getSrcPackMo' + (this.isMoSem ? 'Sem' : 'Orig'), treeView.doc.uri.fsPath)
+        const ret: MoNodes | undefined = await lsp.executeCommand('getSrcPackMoOrig', treeView.doc.uri.fsPath)
         if (ret && Array.isArray(ret) && ret.length)
             setParents(ret)
         return ret ?? []

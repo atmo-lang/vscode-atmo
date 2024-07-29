@@ -5,6 +5,7 @@ import * as tree_packs from './tree_packs'
 import * as tree_toks from './tree_toks'
 import * as tree_ast from './tree_ast'
 import * as tree_mo from './tree_mo'
+import * as tree_sem from './tree_sem'
 
 
 let treeMulti: TreeMulti
@@ -103,8 +104,8 @@ export class TreeMulti extends tree.Tree<any> {
             new tree_packs.Provider(),
             new tree_toks.Provider(),
             new tree_ast.Provider(),
-            new tree_mo.Provider(false),
-            new tree_mo.Provider(true),
+            new tree_mo.Provider(),
+            new tree_sem.Provider(),
         ]
     }
 
