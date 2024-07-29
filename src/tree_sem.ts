@@ -24,7 +24,7 @@ export type SemNode = {
 
 type SemValScalarOrIdent = {
     Kind: "scalar"
-    Val: string | number
+    MoVal: string | number
 }
 type SemValCall = {
     Kind: "call"
