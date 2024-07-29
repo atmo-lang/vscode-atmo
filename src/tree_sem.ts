@@ -19,7 +19,7 @@ export type SemNode = {
         SrcFileText?: string
     }
     Val: SemValScalarOrIdent | SemValCall | SemValList | SemValDict | SemValFunc
-    DefinitelyUnused: boolean
+    Facts: { Kind: SemValFactKind, Of?: any }[]
 }
 
 type SemValScalarOrIdent = {
@@ -45,7 +45,11 @@ type SemValFunc = {
     Scope?: string[]
     Params: SemNodes
     Body: SemNode
-    IsMacro: boolean
+}
+
+enum SemValFactKind {
+    SemValFactCallable,
+    SemValFactUnused
 }
 
 const nodeKindIcons = new Map<string, string>([
@@ -59,7 +63,8 @@ const nodeKindIcons = new Map<string, string>([
 
 export class Provider implements tree_multi.Provider {
     getItem(treeView: tree_multi.TreeMulti, item: SemNode): vsc.TreeItem {
-        const ret = new tree.Item(`${item.Val.Kind}`, (item.Val.Kind !== 'scalar'), item)
+        const facts = (!item.Facts) ? "" : (" — " + item.Facts.map(fact => SemValFactKind[fact.Kind].substring("SemValFact".length) + (fact.Of ? (":" + fact.Of) : "")).join(", "))
+        const ret = new tree.Item(`${item.Val.Kind}${facts}`, (item.Val.Kind !== 'scalar'), item)
         ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.Val.Kind)!)
         if ((ret.description = item.ClientInfo?.SrcFileText ?? "") && ret.description.length)
             ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n", true)
