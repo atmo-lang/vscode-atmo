@@ -112,7 +112,7 @@
     "commands": [
       { "command": "atmo.inspector.none", "title": "Atmo insider 0: none", "icon": "$(clear-all)" },
       { "command": "atmo.inspector.packs", "title": "Atmo insider 1: in-session packs", "icon": "$(package)" },
-      { "command": "atmo.inspector.toks", "title": "Atmo insider 2: lexemes from source", "icon": "$(list-flat)" },
+      { "command": "atmo.inspector.toks", "title": "Atmo insider 2: lexemes from source file", "icon": "$(list-flat)" },
       { "command": "atmo.inspector.ast", "title": "Atmo insider 3: parse tree from lexemes", "icon": "$(list-tree)" },
       { "command": "atmo.inspector.moOrig", "title": "Atmo insider 4: Mo from parse tree", "icon": "$(symbol-misc)" },
       { "command": "atmo.inspector.moSem", "title": "Atmo insider 5: Sem from Mo", "icon": "$(symbol-misc)" },

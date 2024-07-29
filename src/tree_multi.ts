@@ -68,8 +68,8 @@ export interface Provider {
 class EmptyProvider implements Provider {
     getItem(treeView: TreeMulti, item: ProviderImpl): vsc.TreeItem {
         const ret = new tree.Item<ProviderImpl>(
-            ((item === ProviderImpl.Packs) ? "·\tin-session packages"
-                : (item === ProviderImpl.Toks) ? "·\tlexemes from source"
+            ((item === ProviderImpl.Packs) ? "·\tin-session packs"
+                : (item === ProviderImpl.Toks) ? "·\tlexemes from source file"
                     : (item === ProviderImpl.Ast) ? "·\tparse tree from lexemes"
                         : (item === ProviderImpl.MoOrig) ? "·\tMo from parse tree"
                             : (item === ProviderImpl.MoSem) ? "·\tSem from Mo"
