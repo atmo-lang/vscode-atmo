@@ -42,9 +42,7 @@ type SemValDict = {
 }
 type SemValFunc = {
     Kind: "func"
-    Scope?: {
-        Own: { [_: string]: SemNode },
-    }
+    Scope?: string[]
     Params: SemNodes
     Body: SemNode
     IsMacro: boolean
