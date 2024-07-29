@@ -23,25 +23,25 @@ export type SemNode = {
 }
 
 type SemValScalarOrIdent = {
-    kind: "scalar"
+    Kind: "scalar"
     Val: string | number
 }
 type SemValCall = {
-    kind: "call"
+    Kind: "call"
     Callee: SemNode
     Args: SemNodes
 }
 type SemValList = {
-    kind: "list"
+    Kind: "list"
     Items: SemNodes
 }
 type SemValDict = {
-    kind: "dict"
+    Kind: "dict"
     Keys: SemNodes
     Vals: SemNodes
 }
 type SemValFunc = {
-    kind: "func"
+    Kind: "func"
     Scope?: {
         Own: { [_: string]: SemNode },
     }
@@ -54,15 +54,15 @@ const nodeKindIcons = new Map<string, string>([
     ["scalar", "symbol-variable"],
     ["list", "symbol-array"],
     ["dict", "symbol-namespace"],
-    ["call", "symbol-call"],
+    ["call", "symbol-color"],
     ["func", "symbol-method"],
 ])
 
 
 export class Provider implements tree_multi.Provider {
     getItem(treeView: tree_multi.TreeMulti, item: SemNode): vsc.TreeItem {
-        const ret = new tree.Item(`${item.Val.kind} — ${item.ClientInfo?.SrcFileText}`, (item.Val.kind !== 'scalar'), item)
-        ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.Val.kind)!)
+        const ret = new tree.Item(`${item.Val.Kind}`, (item.Val.Kind !== 'scalar'), item)
+        ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.Val.Kind)!)
         if ((ret.description = item.ClientInfo?.SrcFileText ?? "") && ret.description.length)
             ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n", true)
         ret.command = treeView.cmdOnClick(ret)
@@ -78,10 +78,10 @@ export class Provider implements tree_multi.Provider {
             return []
 
         if (item) {
-            switch (item.Val.kind) {
+            switch (item.Val.Kind) {
                 case 'list': return item.Val.Items
                 case 'call': return [item.Val.Callee].concat(item.Val.Args)
-                case 'dict': return item.Val.Keys
+                case 'dict': return dictEntries(item.Val)
                 case 'func': return item.Val.Params.concat(item.Val.Body)
             }
             return []
@@ -105,10 +105,18 @@ export class Provider implements tree_multi.Provider {
 }
 
 
+function dictEntries(dict: SemValDict): SemNodes {
+    const ret: SemNodes = []
+    for (let i = 0; i < dict.Keys.length; i++)
+        ret.push(dict.Keys[i], dict.Vals[i])
+    return ret
+}
+
+
 function setParents(nodes: SemNodes, parent?: SemNode) {
     for (const node of nodes) {
         node.parent = parent
-        switch (node.Val.kind) {
+        switch (node.Val.Kind) {
             case 'list':
                 setParents(node.Val.Items, node)
                 break
