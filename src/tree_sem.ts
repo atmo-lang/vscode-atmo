@@ -19,7 +19,7 @@ export type SemNode = {
         SrcFileText?: string
     }
     Val: SemValScalarOrIdent | SemValCall | SemValList | SemValDict | SemValFunc
-    Facts: { Kind: SemFactKind, Of?: any }[]
+    Facts: { Kind: SemFactKind, Data?: any }[]
 }
 
 type SemValScalarOrIdent = {
@@ -55,6 +55,8 @@ enum SemFactKind {
     SemFactScalar,
     SemFactPrimType,
     SemFactFuncIsMacro,
+    SemFactQQuote,
+    SemFactBool,
 }
 
 const nodeKindIcons = new Map<string, string>([
@@ -68,7 +70,7 @@ const nodeKindIcons = new Map<string, string>([
 
 export class Provider implements tree_multi.Provider {
     getItem(treeView: tree_multi.TreeMulti, item: SemNode): vsc.TreeItem {
-        const facts = (!item.Facts) ? "" : (" — " + item.Facts.map(fact => SemFactKind[fact.Kind].substring("SemFact".length) + (fact.Of ? (":" + fact.Of) : "")).join(", "))
+        const facts = (!item.Facts) ? "" : (" — " + item.Facts.map(fact => SemFactKind[fact.Kind].substring("SemFact".length) + (fact.Data ? (":" + fact.Data) : "")).join(", "))
         const ret = new tree.Item(`${item.Val.Kind}${facts}`, (item.Val.Kind !== 'scalar'), item)
         ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.Val.Kind)!)
         if ((ret.description = item.ClientInfo?.SrcFileText ?? "") && ret.description.length)
