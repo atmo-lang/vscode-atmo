@@ -68,11 +68,11 @@ export interface Provider {
 class EmptyProvider implements Provider {
     getItem(treeView: TreeMulti, item: ProviderImpl): vsc.TreeItem {
         const ret = new tree.Item<ProviderImpl>(
-            ((item === ProviderImpl.Packs) ? "·\tin-session packs"
-                : (item === ProviderImpl.Toks) ? "·\tlexemes from source file"
-                    : (item === ProviderImpl.Ast) ? "·\tparse tree from lexemes"
-                        : (item === ProviderImpl.MoOrig) ? "·\tMo from parse tree"
-                            : (item === ProviderImpl.MoSem) ? "·\tSem from Mo"
+            ((item === ProviderImpl.Packs) ? " — in-session packs"
+                : (item === ProviderImpl.Toks) ? " — lexemes from source file"
+                    : (item === ProviderImpl.Ast) ? " — parse tree from lexemes"
+                        : (item === ProviderImpl.MoOrig) ? " — Mo from parse tree"
+                            : (item === ProviderImpl.MoSem) ? " — Sem from Mo"
                                 : "No inspector currently selected. Pick one:"),
             false, item)
         ret.iconPath = new vsc.ThemeIcon(implIcons.get(item)!)
