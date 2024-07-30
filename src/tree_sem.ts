@@ -49,13 +49,8 @@ type SemValFunc = {
 
 enum SemFactKind {
     _,
-    SemFactCallable,
     SemFactUnused,
     SemFactEffectful,
-    SemFactScalar,
-    SemFactPrimType,
-    SemFactFuncIsMacro,
-    SemFactQQuote,
 }
 
 const nodeKindIcons = new Map<string, string>([
