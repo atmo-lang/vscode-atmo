@@ -56,7 +56,6 @@ enum SemFactKind {
     SemFactPrimType,
     SemFactFuncIsMacro,
     SemFactQQuote,
-    SemFactBool,
 }
 
 const nodeKindIcons = new Map<string, string>([
