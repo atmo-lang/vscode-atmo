@@ -23,28 +23,33 @@ export type SemNode = {
 }
 
 type SemValScalarOrIdent = {
+    Ty?: string
     Kind: "scalar"
     MoVal: string | number
 }
 type SemValCall = {
+    Ty?: string
     Kind: "call"
     Callee: SemNode
     Args: SemNodes
 }
 type SemValList = {
+    Ty?: string
     Kind: "list"
     Items: SemNodes
 }
 type SemValDict = {
+    Ty?: string
     Kind: "dict"
     Keys: SemNodes
     Vals: SemNodes
 }
 type SemValFunc = {
+    Ty?: string
     Kind: "func"
     Scope?: string[]
     Params: SemNodes
-    Body: SemNode
+    Body?: SemNode // undefined for builtin prim funcs
 }
 
 enum SemFactKind {
@@ -65,10 +70,10 @@ const nodeKindIcons = new Map<string, string>([
 export class Provider implements tree_multi.Provider {
     getItem(treeView: tree_multi.TreeMulti, item: SemNode): vsc.TreeItem {
         const facts = (!item.Facts) ? "" : (" — " + item.Facts.map(fact => SemFactKind[fact.Kind].substring("SemFact".length) + (fact.Data ? (":" + fact.Data) : "")).join(", "))
-        const ret = new tree.Item(`${item.Val.Kind}${facts}`, (item.Val.Kind !== 'scalar'), item)
+        const ret = new tree.Item(`${item.Val.Kind}${facts}`, ((item.Val.Kind !== 'scalar') && ((item.Val.Kind !== 'func') || (item.Val.Body != undefined))), item)
         ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.Val.Kind)!)
         if ((ret.description = item.ClientInfo?.SrcFileText ?? "") && ret.description.length)
-            ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n", true)
+            ret.tooltip = new vsc.MarkdownString((item.Val.Ty ?? "") + "\n____\n```atmo\n" + ret.description + "\n```\n", true)
         ret.command = treeView.cmdOnClick(ret)
         return ret
     }
@@ -86,7 +91,7 @@ export class Provider implements tree_multi.Provider {
                 case 'list': return item.Val.Items
                 case 'call': return [item.Val.Callee].concat(item.Val.Args)
                 case 'dict': return dictEntries(item.Val)
-                case 'func': return item.Val.Params.concat(item.Val.Body)
+                case 'func': return item.Val.Body ? item.Val.Params.concat(item.Val.Body) : []
             }
             return []
         }
@@ -118,24 +123,26 @@ function dictEntries(dict: SemValDict): SemNodes {
 
 
 function setParents(nodes: SemNodes, parent?: SemNode) {
-    for (const node of nodes) {
-        node.parent = parent
-        switch (node.Val.Kind) {
-            case 'list':
-                setParents(node.Val.Items, node)
-                break
-            case 'dict':
-                setParents(node.Val.Keys, node)
-                setParents(node.Val.Vals, node)
-                break
-            case 'call':
-                node.Val.Callee.parent = node
-                setParents(node.Val.Args, node)
-                break
-            case 'func':
-                setParents(node.Val.Params, node)
-                node.Val.Body.parent = node
-                break
+    for (const node of nodes)
+        if (node) {
+            node.parent = parent
+            switch (node.Val.Kind) {
+                case 'list':
+                    setParents(node.Val.Items, node)
+                    break
+                case 'dict':
+                    setParents(node.Val.Keys, node)
+                    setParents(node.Val.Vals, node)
+                    break
+                case 'call':
+                    node.Val.Callee.parent = node
+                    setParents(node.Val.Args, node)
+                    break
+                case 'func':
+                    setParents(node.Val.Params, node)
+                    if (node.Val.Body) // undef for builtin funcs
+                        node.Val.Body.parent = node
+                    break
+            }
         }
-    }
 }
