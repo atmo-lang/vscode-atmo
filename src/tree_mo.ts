@@ -17,9 +17,8 @@ export type MoNode = {
     Nodes: MoNodes
 }
 export enum MoPrimTypeTag {
-    Never = -2,
     DictEntry = -1,
-    _,
+    Never,
     Void,
     PrimTypeTag,
     Ident,
