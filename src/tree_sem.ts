@@ -8,11 +8,11 @@ import * as tree_multi from './tree_multi'
 export type SemNodes = SemNode[]
 export type SemNode = {
     parent?: SemNode
-    ErrOwn?: {
+    ErrsOwn?: {
         Kind: number
         Code: string
         Message: string
-    }
+    }[]
     ClientInfo?: {
         SrcFilePath?: string
         SrcFileSpan?: lsp.SrcFileSpan
