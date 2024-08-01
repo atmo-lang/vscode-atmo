@@ -56,6 +56,7 @@ enum SemFactKind {
     _,
     SemFactUnused,
     SemFactEffectful,
+    SemFactPreComputed,
 }
 
 const nodeKindIcons = new Map<string, string>([
