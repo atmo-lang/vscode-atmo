@@ -59,6 +59,7 @@ enum SemFactKind {
     SemFactPreComputed,
     SemFactPrimOp,
     SemFactPrimFn,
+    SemFactPrimIdent,
 }
 
 const nodeKindIcons = new Map<string, string>([
