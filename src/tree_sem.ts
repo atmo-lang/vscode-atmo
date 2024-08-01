@@ -55,7 +55,7 @@ type SemValFunc = {
 enum SemFactKind {
     _,
     SemFactUnused,
-    SemFactEffectful,
+    SemFactNotPure,
     SemFactPreComputed,
     SemFactPrimOp,
     SemFactPrimFn,
