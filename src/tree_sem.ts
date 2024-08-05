@@ -37,6 +37,7 @@ type SemValList = {
     Ty?: string
     Kind: "list"
     Items: SemNodes
+    IsTup: boolean
 }
 type SemValDict = {
     Ty?: string
@@ -77,7 +78,11 @@ export class Provider implements tree_multi.Provider {
         const ret = new tree.Item(`${item.Val.Kind}${facts}`, ((item.Val.Kind !== 'scalar') && ((item.Val.Kind !== 'func') || (item.Val.Body != undefined))), item)
         ret.iconPath = new vsc.ThemeIcon(nodeKindIcons.get(item.Val.Kind)!)
         if ((ret.description = item.ClientInfo?.SrcFileText ?? "") && ret.description.length)
-            ret.tooltip = new vsc.MarkdownString((item.Val.Ty ?? "") + "\n____\n```atmo\n" + ret.description + "\n```\n", true)
+            ret.tooltip = new vsc.MarkdownString("```atmo\n" + ret.description + "\n```\n", true)
+        if ("IsTup" in item.Val)
+            ret.description = "(tuple) — " + ret.description
+        if (item.Val.Ty)
+            ret.description = item.Val.Ty + " — " + ret.description
         ret.command = treeView.cmdOnClick(ret)
         return ret
     }
