@@ -64,7 +64,6 @@ const nodeKindIcons = new Map<MoPrimTypeTag, string>([
     [MoPrimTypeTag.Not, "symbol-boolean"],
 ])
 
-
 export class Provider implements tree_multi.Provider {
     getItem(treeView: tree_multi.TreeMulti, item: MoNode): vsc.TreeItem {
         const ret = new tree.Item(`${MoPrimTypeTag[item.PrimTypeTag]}`, (item.Nodes && item.Nodes.length) ? true : false, item)
